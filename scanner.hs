@@ -55,12 +55,22 @@ instance Show Token where -- Todo, add tokenType to show
   show (Token tokenType lexeme literal _) = show tokenType
 
 scan :: String -> [Token]
-scan content = []
+scan content = reverse $ foldl (\acc line -> get line acc) [] (lines content)
+
+quoteLookAhead :: String -> String -> (String, String)
+quoteLookAhead [] _ = error "Quotes not terminated"
+quoteLookAhead ('\\' : '"' : xs) acc = quoteLookAhead xs (acc ++ "\\\"")
+quoteLookAhead ('"' : xs) acc = (acc, xs)
+quoteLookAhead (x : xs) acc = quoteLookAhead xs (acc ++ xs)
 
 get :: String -> [Token] -> [Token]
 get [] tokens = tokens
-get ('+' : '+' : xs) tokens = get xs (addToken LEFT_PAREN tokens)
+get ('"' : xs) tokens = get rest (addToken STRING tokens)
+  where
+    (literal, rest) = quoteLookAhead xs []
+get ('=' : '=' : xs) tokens = get xs (addToken EQUAL_EQUAL tokens)
 get ('(' : xs) tokens = get xs (addToken LEFT_PAREN tokens)
+get (_ : xs) tokens = get xs tokens
 
 main :: IO ()
 main = do
