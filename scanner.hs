@@ -103,35 +103,35 @@ getToken input@(x : xs) l
     keyword = parseKeyword aLiteral
 
 match :: String -> Int -> (Maybe Token, String)
--- Special
-match ('"' : xs) l = (Just (Token STRING "" (Just literal) l), rest)
-  where
-    (literal, rest) = quoteLookAhead xs []
-match ('/' : '/' : _) l = (Nothing, [])
--- Multichars
-match ('!' : '=' : xs) l = (Just (Token BANG_EQUAL "" Nothing l), xs)
-match ('=' : '=' : xs) l = (Just (Token EQUAL_EQUAL "" Nothing l), xs)
-match ('<' : '=' : xs) l = (Just (Token LESS_EQUAL "" Nothing l), xs)
-match ('>' : '=' : xs) l = (Just (Token GREATER_EQUAL "" Nothing l), xs)
--- Single chars
-match ('!' : xs) l = (Just (Token BANG "" Nothing l), xs)
-match ('=' : xs) l = (Just (Token EQUAL "" Nothing l), xs)
-match ('<' : xs) l = (Just (Token LESS "" Nothing l), xs)
-match ('>' : xs) l = (Just (Token GREATER "" Nothing l), xs)
---
-match ('/' : xs) l = (Just (Token SLASH "" Nothing l), xs)
-match ('(' : xs) l = (Just (Token LEFT_PAREN "" Nothing l), xs)
-match (')' : xs) l = (Just (Token RIGHT_PAREN "" Nothing l), xs)
-match ('{' : xs) l = (Just (Token LEFT_BRACE "" Nothing l), xs)
-match ('}' : xs) l = (Just (Token RIGHT_BRACE "" Nothing l), xs)
-match (',' : xs) l = (Just (Token COMMA "" Nothing l), xs)
-match ('.' : xs) l = (Just (Token DOT "" Nothing l), xs)
-match ('-' : xs) l = (Just (Token MINUS "" Nothing l), xs)
-match ('+' : xs) l = (Just (Token PLUS "" Nothing l), xs)
-match (';' : xs) l = (Just (Token SEMICOLON "" Nothing l), xs)
-match ('*' : xs) l = (Just (Token STAR "" Nothing l), xs)
--- Fallback. TODO: Ignore white space specifically
-match (_ : xs) l = (Nothing, xs)
+match str l = case str of
+  -- Special
+  ('"' : xs) ->
+    let (literal, rest) = quoteLookAhead xs []
+     in (Just (Token STRING "" (Just literal) l), rest)
+  ('/' : '/' : _) -> (Nothing, [])
+  -- Multichars
+  ('!' : '=' : xs) -> (Just (Token BANG_EQUAL "" Nothing l), xs)
+  ('=' : '=' : xs) -> (Just (Token EQUAL_EQUAL "" Nothing l), xs)
+  ('<' : '=' : xs) -> (Just (Token LESS_EQUAL "" Nothing l), xs)
+  ('>' : '=' : xs) -> (Just (Token GREATER_EQUAL "" Nothing l), xs)
+  -- Single chars
+  ('!' : xs) -> (Just (Token BANG "" Nothing l), xs)
+  ('=' : xs) -> (Just (Token EQUAL "" Nothing l), xs)
+  ('<' : xs) -> (Just (Token LESS "" Nothing l), xs)
+  ('>' : xs) -> (Just (Token GREATER "" Nothing l), xs)
+  ('/' : xs) -> (Just (Token SLASH "" Nothing l), xs)
+  ('(' : xs) -> (Just (Token LEFT_PAREN "" Nothing l), xs)
+  (')' : xs) -> (Just (Token RIGHT_PAREN "" Nothing l), xs)
+  ('{' : xs) -> (Just (Token LEFT_BRACE "" Nothing l), xs)
+  ('}' : xs) -> (Just (Token RIGHT_BRACE "" Nothing l), xs)
+  (',' : xs) -> (Just (Token COMMA "" Nothing l), xs)
+  ('.' : xs) -> (Just (Token DOT "" Nothing l), xs)
+  ('-' : xs) -> (Just (Token MINUS "" Nothing l), xs)
+  ('+' : xs) -> (Just (Token PLUS "" Nothing l), xs)
+  (';' : xs) -> (Just (Token SEMICOLON "" Nothing l), xs)
+  ('*' : xs) -> (Just (Token STAR "" Nothing l), xs)
+  -- Fallback. TODO: Ignore white space specifically
+  (_ : xs) -> (Nothing, xs)
 
 quoteLookAhead :: String -> String -> (String, String)
 quoteLookAhead [] _ = error "Quotes not terminated"
