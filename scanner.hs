@@ -70,19 +70,22 @@ data Token = Token {tokenType :: TokenType, lexeme :: String, literal :: Maybe S
 
 instance Show Token where
   show (Token tokenType lexeme literal _) =
-    show tokenType ++ "(" ++ lexeme ++ ")" ++ formatLiteral literal
+    show tokenType ++ "[" ++ lexeme ++ "]" ++ formatLiteral literal
     where
       formatLiteral :: Maybe String -> String
       formatLiteral = maybe "" (\lit -> " (" ++ lit ++ ")")
+
+getEOF :: Int -> Token
+getEOF = Token EOF "" Nothing
 
 scan :: String -> [Token]
 scan text = go text text 0 []
   where
     go :: String -> String -> Int -> [Token] -> [Token]
-    go _ [] _ tokens = tokens
+    go _ [] line tokens = reverse (getEOF line : tokens)
     go text r line tokens = case token of
-      Just t -> go text rest l (t : tokens)
-      _ -> go text rest l tokens
+      Just t -> go text rest line (t : tokens)
+      _ -> go text rest line tokens
       where
         (token, rest, l) = getToken r line
 
@@ -95,7 +98,7 @@ getToken input@(x : xs) l
   | isDigit x = (Just (Token NUMBER nLiteral (Just nLiteral) l), nRest, l)
   | isValidString x = case keyword of
       Just x -> (Just (Token x aLiteral Nothing l), aRest, l)
-      Nothing -> (Just (Token IDENTIFIER aLiteral (Just aLiteral) l), aRest, l)
+      Nothing -> (Just (Token IDENTIFIER aLiteral Nothing l), aRest, l)
   | otherwise = match input l
   where
     (nLiteral, nRest) = digitLookAhead xs [x] False
@@ -137,14 +140,14 @@ match str l = case str of
 
 quoteLookAhead :: String -> String -> (String, String)
 quoteLookAhead [] _ = error "Quotes not terminated"
-quoteLookAhead ('\"' : '"' : xs) acc = quoteLookAhead xs (acc ++ "\"")
-quoteLookAhead ('"' : xs) acc = (acc, xs)
-quoteLookAhead (x : xs) acc = quoteLookAhead xs (acc ++ [x])
+quoteLookAhead ('\"' : '"' : xs) acc = quoteLookAhead xs ('\"' : acc)
+quoteLookAhead ('"' : xs) acc = (reverse acc, xs)
+quoteLookAhead (x : xs) acc = quoteLookAhead xs (x : acc)
 
 getNextNewLine :: Int -> String -> (Int, String)
 getNextNewLine l [] = (l, [])
 getNextNewLine l ('\n' : xs) = (l + 1, xs)
-getNextNewLine l (x : xs) = getNextNewLine l xs
+getNextNewLine l (_ : xs) = getNextNewLine l xs
 
 digitLookAhead :: String -> String -> Bool -> (String, String)
 digitLookAhead [] acc _ = (reverse acc, [])
