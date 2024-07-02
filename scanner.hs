@@ -1,4 +1,4 @@
-import Data.Char (isDigit)
+import Data.Char (isAlpha, isDigit)
 
 data TokenType
   = -- Single char tokens
@@ -46,6 +46,26 @@ data TokenType
   | EOF
   deriving (Show, Eq)
 
+parseKeyword :: String -> Maybe TokenType
+parseKeyword str = case str of
+  "and" -> Just AND
+  "class" -> Just CLASS
+  "else" -> Just ELSE
+  "false" -> Just FALSE
+  "fun" -> Just FUN
+  "for" -> Just FOR
+  "if" -> Just IF
+  "nil" -> Just NIL
+  "or" -> Just OR
+  "print" -> Just PRINT
+  "return" -> Just RETURN
+  "super" -> Just SUPER
+  "this" -> Just THIS
+  "true" -> Just TRUE
+  "var" -> Just VAR
+  "while" -> Just WHILE
+  _ -> Nothing
+
 data Token = Token {tokenType :: TokenType, lexeme :: String, literal :: Maybe String, line :: Int}
 
 instance Show Token where
@@ -67,12 +87,20 @@ scan (x : xs) tokens = (go x tokens ++ scan xs tokens)
       where
         (token, rest) = getToken line 0
 
+isValidString :: Char -> Bool
+isValidString c = isAlpha c || c == '_'
+
 getToken :: String -> Int -> (Maybe Token, String)
 getToken input@(x : xs) l
-  | isDigit x = (Just (Token NUMBER "" (Just literal) l), rest)
+  | isDigit x = (Just (Token NUMBER "" (Just nLiteral) l), nRest)
+  | isValidString x = case keyword of
+      Just x -> (Just (Token IDENTIFIER "" (Just aLiteral) l), aRest)
+      Nothing -> (Just (Token STRING "" (Just aLiteral) l), aRest)
   | otherwise = match input l
   where
-    (literal, rest) = digitLookAhead xs [x] False
+    (nLiteral, nRest) = digitLookAhead xs [x] False
+    (aLiteral, aRest) = alphaLookAhead xs [x] False
+    keyword = parseKeyword aLiteral
 
 digitLookAhead :: String -> String -> Bool -> (String, String)
 digitLookAhead [] acc _ = (reverse acc, [])
@@ -82,6 +110,14 @@ digitLookAhead ('.' : y : xs) acc p
   | otherwise = error "Bad period"
 digitLookAhead (x : xs) acc p
   | isDigit x = digitLookAhead xs (x : acc) p
+  | otherwise = error "Bad symbol"
+
+alphaLookAhead :: String -> String -> Bool -> (String, String)
+alphaLookAhead [] acc _ = (reverse acc, [])
+alphaLookAhead (' ' : xs) acc p = (acc, xs)
+alphaLookAhead (x : xs) acc p
+  | isValidString x = alphaLookAhead xs (x : acc) p
+  | isDigit x = alphaLookAhead xs (x : acc) p
   | otherwise = error "Bad symbol"
 
 match :: String -> Int -> (Maybe Token, String)
