@@ -85,59 +85,67 @@ scan (x : xs) tokens = (go x tokens ++ scan xs tokens)
       Nothing -> go rest tokens
       Just token -> go rest (token : tokens)
       where
-        (token, rest) = getToken line 0
+        (token, rest, l) = getToken line 0
 
 isValidString :: Char -> Bool
 isValidString c = isAlpha c || c == '_'
 
-getToken :: String -> Int -> (Maybe Token, String)
+getToken :: String -> Int -> (Maybe Token, String, Int)
 getToken input@(x : xs) l
-  | isDigit x = (Just (Token NUMBER nLiteral (Just nLiteral) l), nRest)
+  | isDigit x = (Just (Token NUMBER nLiteral (Just nLiteral) l), nRest, l)
   | isValidString x = case keyword of
-      Just x -> (Just (Token x aLiteral Nothing l), aRest)
-      Nothing -> (Just (Token IDENTIFIER aLiteral (Just aLiteral) l), aRest)
+      Just x -> (Just (Token x aLiteral Nothing l), aRest, l)
+      Nothing -> (Just (Token IDENTIFIER aLiteral (Just aLiteral) l), aRest, l)
   | otherwise = match input l
   where
     (nLiteral, nRest) = digitLookAhead xs [x] False
     (aLiteral, aRest) = alphaLookAhead xs [x] False
     keyword = parseKeyword aLiteral
 
-match :: String -> Int -> (Maybe Token, String)
+match :: String -> Int -> (Maybe Token, String, Int)
 match str l = case str of
   -- Special
   ('"' : xs) ->
     let (literal, rest) = quoteLookAhead xs []
-     in (Just (Token STRING ("\"" ++ literal ++ "\"") (Just literal) l), rest)
-  ('/' : '/' : _) -> (Nothing, [])
+     in (Just (Token STRING ("\"" ++ literal ++ "\"") (Just literal) l), rest, l)
+  ('/' : '/' : xs) ->
+    let (newLineNumber, rest) = getNextNewLine l xs
+     in (Nothing, xs, newLineNumber)
+  ('\\' : 'n' : xs) -> (Nothing, xs, l + 1)
   -- Multichars
-  ('!' : '=' : xs) -> (Just (Token BANG_EQUAL "!=" Nothing l), xs)
-  ('=' : '=' : xs) -> (Just (Token EQUAL_EQUAL "==" Nothing l), xs)
-  ('<' : '=' : xs) -> (Just (Token LESS_EQUAL "<=" Nothing l), xs)
-  ('>' : '=' : xs) -> (Just (Token GREATER_EQUAL ">=" Nothing l), xs)
+  ('!' : '=' : xs) -> (Just (Token BANG_EQUAL "!=" Nothing l), xs, l)
+  ('=' : '=' : xs) -> (Just (Token EQUAL_EQUAL "==" Nothing l), xs, l)
+  ('<' : '=' : xs) -> (Just (Token LESS_EQUAL "<=" Nothing l), xs, l)
+  ('>' : '=' : xs) -> (Just (Token GREATER_EQUAL ">=" Nothing l), xs, l)
   -- Single chars
-  (c@'!' : xs) -> (Just (Token BANG [c] Nothing l), xs)
-  (c@'=' : xs) -> (Just (Token EQUAL [c] Nothing l), xs)
-  (c@'<' : xs) -> (Just (Token LESS [c] Nothing l), xs)
-  (c@'>' : xs) -> (Just (Token GREATER [c] Nothing l), xs)
-  (c@'/' : xs) -> (Just (Token SLASH [c] Nothing l), xs)
-  (c@'(' : xs) -> (Just (Token LEFT_PAREN [c] Nothing l), xs)
-  (c@')' : xs) -> (Just (Token RIGHT_PAREN [c] Nothing l), xs)
-  (c@'{' : xs) -> (Just (Token LEFT_BRACE [c] Nothing l), xs)
-  (c@'}' : xs) -> (Just (Token RIGHT_BRACE [c] Nothing l), xs)
-  (c@',' : xs) -> (Just (Token COMMA [c] Nothing l), xs)
-  (c@'.' : xs) -> (Just (Token DOT [c] Nothing l), xs)
-  (c@'-' : xs) -> (Just (Token MINUS [c] Nothing l), xs)
-  (c@'+' : xs) -> (Just (Token PLUS [c] Nothing l), xs)
-  (c@';' : xs) -> (Just (Token SEMICOLON [c] Nothing l), xs)
-  (c@'*' : xs) -> (Just (Token STAR [c] Nothing l), xs)
+  (c@'!' : xs) -> (Just (Token BANG [c] Nothing l), xs, l)
+  (c@'=' : xs) -> (Just (Token EQUAL [c] Nothing l), xs, l)
+  (c@'<' : xs) -> (Just (Token LESS [c] Nothing l), xs, l)
+  (c@'>' : xs) -> (Just (Token GREATER [c] Nothing l), xs, l)
+  (c@'/' : xs) -> (Just (Token SLASH [c] Nothing l), xs, l)
+  (c@'(' : xs) -> (Just (Token LEFT_PAREN [c] Nothing l), xs, l)
+  (c@')' : xs) -> (Just (Token RIGHT_PAREN [c] Nothing l), xs, l)
+  (c@'{' : xs) -> (Just (Token LEFT_BRACE [c] Nothing l), xs, l)
+  (c@'}' : xs) -> (Just (Token RIGHT_BRACE [c] Nothing l), xs, l)
+  (c@',' : xs) -> (Just (Token COMMA [c] Nothing l), xs, l)
+  (c@'.' : xs) -> (Just (Token DOT [c] Nothing l), xs, l)
+  (c@'-' : xs) -> (Just (Token MINUS [c] Nothing l), xs, l)
+  (c@'+' : xs) -> (Just (Token PLUS [c] Nothing l), xs, l)
+  (c@';' : xs) -> (Just (Token SEMICOLON [c] Nothing l), xs, l)
+  (c@'*' : xs) -> (Just (Token STAR [c] Nothing l), xs, l)
   -- Fallback. TODO: Ignore white space specifically
-  (_ : xs) -> (Nothing, xs)
+  (_ : xs) -> (Nothing, xs, l)
 
 quoteLookAhead :: String -> String -> (String, String)
 quoteLookAhead [] _ = error "Quotes not terminated"
 quoteLookAhead ('\\' : '"' : xs) acc = quoteLookAhead xs (acc ++ "\\\"")
 quoteLookAhead ('"' : xs) acc = (acc, xs)
 quoteLookAhead (x : xs) acc = quoteLookAhead xs (acc ++ [x])
+
+getNextNewLine :: Int -> String -> (Int, String)
+getNextNewLine l [] = (l, [])
+getNextNewLine l ('\\' : 'n' : xs) = (l + 1, xs)
+getNextNewLine l (x : xs) = getNextNewLine l xs
 
 digitLookAhead :: String -> String -> Bool -> (String, String)
 digitLookAhead [] acc _ = (reverse acc, [])
