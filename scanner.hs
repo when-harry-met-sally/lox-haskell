@@ -141,7 +141,7 @@ match str l = case str of
 quoteLookAhead :: String -> String -> (String, String)
 quoteLookAhead [] _ = error "Unterminated quotation"
 quoteLookAhead ('"' : xs) acc = (reverse acc, xs) -- End of quote found, return accumulated string and rest
-quoteLookAhead ('\\' : '"' : xs) acc = quoteLookAhead xs ('"' : acc) -- Handle escaped quote
+quoteLookAhead ('\\' : c : xs) acc = quoteLookAhead xs (c : acc) -- Handle any escaped character generically
 quoteLookAhead (x : xs) acc = quoteLookAhead xs (x : acc) -- Continue accumulating characters
 
 getNextNewLine :: Int -> String -> (Int, String)
