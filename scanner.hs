@@ -75,17 +75,15 @@ instance Show Token where
       formatLiteral :: Maybe String -> String
       formatLiteral = maybe "" (\lit -> " (" ++ lit ++ ")")
 
-scan :: [String] -> [Token] -> [Token]
-scan [] tokens = tokens
-scan (x : xs) tokens = (go x tokens ++ scan xs tokens)
+scan :: String -> [Token]
+scan text = go text text 0 []
   where
-    go :: String -> [Token] -> [Token]
-    go [] tokens = reverse tokens
-    go line tokens = case token of
-      Nothing -> go rest tokens
-      Just token -> go rest (token : tokens)
+    go :: String -> String -> Int -> [Token] -> [Token]
+    go text r line tokens = case token of
+      Just t -> go text rest l (t : tokens)
+      _ -> go text rest l tokens
       where
-        (token, rest, l) = getToken line 0
+        (token, rest, l) = getToken r line
 
 isValidString :: Char -> Bool
 isValidString c = isAlpha c || c == '_'
@@ -155,7 +153,7 @@ digitLookAhead ('.' : y : xs) acc p
   | otherwise = error "Bad period"
 digitLookAhead (x : xs) acc p
   | isDigit x = digitLookAhead xs (x : acc) p
-  | otherwise = error "Bad symbol"
+  | otherwise = error ("Bad symbol (" ++ [x] ++ ")")
 
 alphaLookAhead :: String -> String -> Bool -> (String, String)
 alphaLookAhead [] acc _ = (reverse acc, [])
@@ -163,7 +161,7 @@ alphaLookAhead (' ' : xs) acc p = (reverse acc, xs)
 alphaLookAhead (x : xs) acc p
   | isValidString x = alphaLookAhead xs (x : acc) p
   | isDigit x = alphaLookAhead xs (x : acc) p
-  | otherwise = error "Bad symbol"
+  | otherwise = error ("Bad symbol (" ++ [x] ++ ")")
 
 main :: IO ()
 main = do
@@ -171,7 +169,7 @@ main = do
   print "----"
   print "File Content"
   print content
-  let tokens = scan (lines content) []
+  let tokens = scan content
   print "----"
   print "Tokens"
   print tokens
