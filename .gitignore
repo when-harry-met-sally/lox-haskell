@@ -1,0 +1,52 @@
+# Stack build artifacts
+.stack-work/
+.stack-work-install/
+
+# Cabal sandboxes (if using cabal)
+.cabal-sandbox/
+cabal.sandbox.config
+cabal.project.local
+
+# Compiled objects and libraries
+*.o
+*.hi
+*.dyn_o
+*.dyn_hi
+*.so
+*.dylib
+*.dll
+
+# Executables
+*.exe
+*.out
+*.stack-bin/
+
+# Haskell IDE engine
+.hie
+*.hie.yaml
+
+# Temporary files
+*.swp
+*~
+.*.swp
+.DS_Store
+*.pid.lock
+
+# Cabal files that should be ignored
+dist/
+dist-newstyle/
+*.cabal
+
+# Local configuration files
+local-settings.yaml
+.stack-work-docker/
+
+# Log files
+*.log
+
+# Directories created by stack
+*_cache/
+*.stack-work/
+
+# REPL history
+.ghc_history
