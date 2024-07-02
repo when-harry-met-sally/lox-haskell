@@ -1,3 +1,5 @@
+module Scanner (Token (..), TokenType (..)) where
+
 import Data.Char (isAlpha, isDigit)
 
 data TokenType
@@ -140,9 +142,9 @@ match str l = case str of
 
 quoteLookAhead :: String -> String -> (String, String)
 quoteLookAhead [] _ = error "Unterminated quotation"
-quoteLookAhead ('"' : xs) acc = (reverse acc, xs) -- End of quote found, return accumulated string and rest
-quoteLookAhead ('\\' : c : xs) acc = quoteLookAhead xs (c : acc) -- Handle any escaped character generically
-quoteLookAhead (x : xs) acc = quoteLookAhead xs (x : acc) -- Continue accumulating characters
+quoteLookAhead ('"' : xs) acc = (reverse acc, xs)
+quoteLookAhead ('\\' : c : xs) acc = quoteLookAhead xs (c : acc)
+quoteLookAhead (x : xs) acc = quoteLookAhead xs (x : acc)
 
 getNextNewLine :: Int -> String -> (Int, String)
 getNextNewLine l [] = (l, [])
