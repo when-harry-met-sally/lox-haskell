@@ -60,52 +60,46 @@ instance Show Token where
       formatLiteral :: Maybe String -> String
       formatLiteral = maybe "" (\lit -> " (" ++ lit ++ ")")
 
-scan :: String -> [Token]
-scan content =
-  reverse $
-    fst $
-      foldl
-        ( \(tokens, lineNumber) line ->
-            (get line tokens lineNumber, lineNumber + 1)
-        )
-        ([], 0)
-        (lines content)
+-- scan :: [String] -> [Token]
+-- scan (x : xs) = go x
+--   where
+--     go :: String -> [Token]
+--     go line = matchToken line
 
-getToken :: String -> [Token] -> Int -> [Token]
-getToken input@(x : xs) tokens l
-  | otherwise = get input tokens l
+getToken :: String -> Int -> Maybe Token
+getToken input@(x : xs) l
+  | otherwise = match input l
 
-get :: String -> [Token] -> Int -> [Token]
-get [] tokens l = tokens
+match :: String -> Int -> Maybe Token
 -- Special
-get ('"' : xs) tokens l = get rest (addToken STRING tokens (Just literal) l) l
+match ('"' : xs) l = Just (Token STRING "" (Just literal) l)
   where
     (literal, rest) = quoteLookAhead xs []
-get ('/' : '/' : _) tokens l = tokens
+match ('/' : '/' : _) l = Nothing
 -- Multichars
-get ('!' : '=' : xs) tokens l = get xs (addToken BANG_EQUAL tokens Nothing l) l
-get ('=' : '=' : xs) tokens l = get xs (addToken EQUAL_EQUAL tokens Nothing l) l
-get ('<' : '=' : xs) tokens l = get xs (addToken LESS_EQUAL tokens Nothing l) l
-get ('>' : '=' : xs) tokens l = get xs (addToken GREATER_EQUAL tokens Nothing l) l
+match ('!' : '=' : xs) l = Just (Token BANG_EQUAL "" Nothing l)
+match ('=' : '=' : xs) l = Just (Token EQUAL_EQUAL "" Nothing l)
+match ('<' : '=' : xs) l = Just (Token LESS_EQUAL "" Nothing l)
+match ('>' : '=' : xs) l = Just (Token GREATER_EQUAL "" Nothing l)
 -- Single chars
-get ('!' : xs) tokens l = get xs (addToken BANG tokens Nothing l) l
-get ('=' : xs) tokens l = get xs (addToken EQUAL tokens Nothing l) l
-get ('<' : xs) tokens l = get xs (addToken LESS tokens Nothing l) l
-get ('>' : xs) tokens l = get xs (addToken GREATER tokens Nothing l) l
+match ('!' : xs) l = Just (Token BANG "" Nothing l)
+match ('=' : xs) l = Just (Token EQUAL "" Nothing l)
+match ('<' : xs) l = Just (Token LESS "" Nothing l)
+match ('>' : xs) l = Just (Token GREATER "" Nothing l)
 --
-get ('/' : xs) tokens l = get xs (addToken SLASH tokens Nothing l) l
-get ('(' : xs) tokens l = get xs (addToken LEFT_PAREN tokens Nothing l) l
-get (')' : xs) tokens l = get xs (addToken RIGHT_PAREN tokens Nothing l) l
-get ('{' : xs) tokens l = get xs (addToken LEFT_BRACE tokens Nothing l) l
-get ('}' : xs) tokens l = get xs (addToken RIGHT_BRACE tokens Nothing l) l
-get (',' : xs) tokens l = get xs (addToken COMMA tokens Nothing l) l
-get ('.' : xs) tokens l = get xs (addToken DOT tokens Nothing l) l
-get ('-' : xs) tokens l = get xs (addToken MINUS tokens Nothing l) l
-get ('+' : xs) tokens l = get xs (addToken PLUS tokens Nothing l) l
-get (';' : xs) tokens l = get xs (addToken SEMICOLON tokens Nothing l) l
-get ('*' : xs) tokens l = get xs (addToken STAR tokens Nothing l) l
+match ('/' : xs) l = Just (Token SLASH "" Nothing l)
+match ('(' : xs) l = Just (Token LEFT_PAREN "" Nothing l)
+match (')' : xs) l = Just (Token RIGHT_PAREN "" Nothing l)
+match ('{' : xs) l = Just (Token LEFT_BRACE "" Nothing l)
+match ('}' : xs) l = Just (Token RIGHT_BRACE "" Nothing l)
+match (',' : xs) l = Just (Token COMMA "" Nothing l)
+match ('.' : xs) l = Just (Token DOT "" Nothing l)
+match ('-' : xs) l = Just (Token MINUS "" Nothing l)
+match ('+' : xs) l = Just (Token PLUS "" Nothing l)
+match (';' : xs) l = Just (Token SEMICOLON "" Nothing l)
+match ('*' : xs) l = Just (Token STAR "" Nothing l)
 -- Fallback
-get (_ : xs) tokens l = error "Unknown character" -- get xs tokens l
+match (_ : xs) l = error "Unknown character" -- match xs tokens l
 
 main :: IO ()
 main = do
@@ -113,13 +107,13 @@ main = do
   print "----"
   print "File Content"
   print content
-  let tokens = scan content
+  let tokens = scan $ lines content
   print "----"
   print "Tokens"
   print tokens
 
 -- TODO:
--- For tomorrow, we simply need to seperate "get" and the matching for the other functions. If not alphanumeric, we call "get".
+-- For tomorrow, we simply need to seperate "match" and the matching for the other functions. If not alphanumeric, we call "match".
 
 quoteLookAhead :: String -> String -> (String, String)
 quoteLookAhead [] _ = error "Quotes not terminated"
