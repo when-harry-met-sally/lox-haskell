@@ -110,7 +110,7 @@ match str l = case str of
      in (Just (Token STRING ("\"" ++ literal ++ "\"") (Just literal) l), rest, l)
   ('/' : '/' : xs) ->
     let (newLineNumber, rest) = getNextNewLine l xs
-     in (Nothing, xs, newLineNumber)
+     in (Nothing, rest, newLineNumber)
   ('\n' : xs) -> (Nothing, xs, l + 1)
   -- Multichars
   ('!' : '=' : xs) -> (Just (Token BANG_EQUAL "!=" Nothing l), xs, l)
