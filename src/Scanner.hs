@@ -175,7 +175,7 @@ alphaLookAhead (x : xs) acc p
 
 main :: IO ()
 main = do
-  content <- readFile "test.lox"
+  content <- readFile "../test/lox/scanner.lox"
   print "----"
   print "File Content"
   print content
