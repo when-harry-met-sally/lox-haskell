@@ -79,6 +79,7 @@ scan :: String -> [Token]
 scan text = go text text 0 []
   where
     go :: String -> String -> Int -> [Token] -> [Token]
+    go _ [] _ tokens = tokens
     go text r line tokens = case token of
       Just t -> go text rest l (t : tokens)
       _ -> go text rest l tokens
@@ -89,6 +90,7 @@ isValidString :: Char -> Bool
 isValidString c = isAlpha c || c == '_'
 
 getToken :: String -> Int -> (Maybe Token, String, Int)
+getToken [] l = (Nothing, [], l)
 getToken input@(x : xs) l
   | isDigit x = (Just (Token NUMBER nLiteral (Just nLiteral) l), nRest, l)
   | isValidString x = case keyword of
@@ -131,12 +133,11 @@ match str l = case str of
   (c@'+' : xs) -> (Just (Token PLUS [c] Nothing l), xs, l)
   (c@';' : xs) -> (Just (Token SEMICOLON [c] Nothing l), xs, l)
   (c@'*' : xs) -> (Just (Token STAR [c] Nothing l), xs, l)
-  -- Fallback. TODO: Ignore white space specifically
   (_ : xs) -> (Nothing, xs, l)
 
 quoteLookAhead :: String -> String -> (String, String)
 quoteLookAhead [] _ = error "Quotes not terminated"
-quoteLookAhead ('\n' : '"' : xs) acc = quoteLookAhead xs (acc ++ "\\\"")
+quoteLookAhead ('\"' : '"' : xs) acc = quoteLookAhead xs (acc ++ "\"")
 quoteLookAhead ('"' : xs) acc = (acc, xs)
 quoteLookAhead (x : xs) acc = quoteLookAhead xs (acc ++ [x])
 
