@@ -73,13 +73,7 @@ scan content =
 
 getToken :: String -> [Token] -> Int -> [Token]
 getToken input@(x : xs) tokens l
-  | isDigit x = getDigit input tokens l [x]
   | otherwise = get input tokens l
-
-getDigit :: String -> [Token] -> Int -> String -> ([Token], String)
-getDigit (x : xs) tokens l acc
-  | isDigit x = getDigit xs tokens l (acc ++ [x])
-  | otherwise = (addToken NUMBER tokens (Just acc) l, xs)
 
 get :: String -> [Token] -> Int -> [Token]
 get [] tokens l = tokens
