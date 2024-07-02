@@ -1,3 +1,5 @@
+import Data.Char (isDigit)
+
 data TokenType
   = -- Single char tokens
     LEFT_PAREN
@@ -69,11 +71,15 @@ scan content =
         ([], 0)
         (lines content)
 
-quoteLookAhead :: String -> String -> (String, String)
-quoteLookAhead [] _ = error "Quotes not terminated"
-quoteLookAhead ('\\' : '"' : xs) acc = quoteLookAhead xs (acc ++ "\\\"")
-quoteLookAhead ('"' : xs) acc = (acc, xs)
-quoteLookAhead (x : xs) acc = quoteLookAhead xs (acc ++ [x])
+getToken :: String -> [Token] -> Int -> [Token]
+getToken input@(x : xs) tokens l
+  | isDigit x = getDigit input tokens l [x]
+  | otherwise = get input tokens l
+
+getDigit :: String -> [Token] -> Int -> String -> ([Token], String)
+getDigit (x : xs) tokens l acc
+  | isDigit x = getDigit xs tokens l (acc ++ [x])
+  | otherwise = (addToken NUMBER tokens (Just acc) l, xs)
 
 get :: String -> [Token] -> Int -> [Token]
 get [] tokens l = tokens
@@ -94,7 +100,6 @@ get ('<' : xs) tokens l = get xs (addToken LESS tokens Nothing l) l
 get ('>' : xs) tokens l = get xs (addToken GREATER tokens Nothing l) l
 --
 get ('/' : xs) tokens l = get xs (addToken SLASH tokens Nothing l) l
---
 get ('(' : xs) tokens l = get xs (addToken LEFT_PAREN tokens Nothing l) l
 get (')' : xs) tokens l = get xs (addToken RIGHT_PAREN tokens Nothing l) l
 get ('{' : xs) tokens l = get xs (addToken LEFT_BRACE tokens Nothing l) l
@@ -106,7 +111,7 @@ get ('+' : xs) tokens l = get xs (addToken PLUS tokens Nothing l) l
 get (';' : xs) tokens l = get xs (addToken SEMICOLON tokens Nothing l) l
 get ('*' : xs) tokens l = get xs (addToken STAR tokens Nothing l) l
 -- Fallback
-get (_ : xs) tokens l = get xs tokens l
+get (_ : xs) tokens l = error "Unknown character" -- get xs tokens l
 
 main :: IO ()
 main = do
@@ -118,3 +123,12 @@ main = do
   print "----"
   print "Tokens"
   print tokens
+
+-- TODO:
+-- For tomorrow, we simply need to seperate "get" and the matching for the other functions. If not alphanumeric, we call "get".
+
+quoteLookAhead :: String -> String -> (String, String)
+quoteLookAhead [] _ = error "Quotes not terminated"
+quoteLookAhead ('\\' : '"' : xs) acc = quoteLookAhead xs (acc ++ "\\\"")
+quoteLookAhead ('"' : xs) acc = (acc, xs)
+quoteLookAhead (x : xs) acc = quoteLookAhead xs (acc ++ [x])
