@@ -94,8 +94,8 @@ getToken :: String -> Int -> (Maybe Token, String)
 getToken input@(x : xs) l
   | isDigit x = (Just (Token NUMBER "" (Just nLiteral) l), nRest)
   | isValidString x = case keyword of
-      Just x -> (Just (Token IDENTIFIER "" (Just aLiteral) l), aRest)
-      Nothing -> (Just (Token STRING "" (Just aLiteral) l), aRest)
+      Just x -> (Just (Token x "" Nothing l), aRest)
+      Nothing -> (Just (Token IDENTIFIER "" (Just aLiteral) l), aRest)
   | otherwise = match input l
   where
     (nLiteral, nRest) = digitLookAhead xs [x] False
@@ -151,7 +151,7 @@ digitLookAhead (x : xs) acc p
 
 alphaLookAhead :: String -> String -> Bool -> (String, String)
 alphaLookAhead [] acc _ = (reverse acc, [])
-alphaLookAhead (' ' : xs) acc p = (acc, xs)
+alphaLookAhead (' ' : xs) acc p = (reverse acc, xs)
 alphaLookAhead (x : xs) acc p
   | isValidString x = alphaLookAhead xs (x : acc) p
   | isDigit x = alphaLookAhead xs (x : acc) p
