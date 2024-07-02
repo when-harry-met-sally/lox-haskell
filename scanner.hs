@@ -66,38 +66,38 @@ instance Show Token where
 --     go :: String -> [Token]
 --     go line = matchToken line
 
-getToken :: String -> Int -> Maybe Token
+getToken :: String -> Int -> (Maybe Token, String)
 getToken input@(x : xs) l
   | otherwise = match input l
 
-match :: String -> Int -> Maybe Token
+match :: String -> Int -> (Maybe Token, String)
 -- Special
-match ('"' : xs) l = Just (Token STRING "" (Just literal) l)
+match ('"' : xs) l = (Just (Token STRING "" (Just literal) l), rest)
   where
     (literal, rest) = quoteLookAhead xs []
-match ('/' : '/' : _) l = Nothing
+match ('/' : '/' : _) l = (Nothing, [])
 -- Multichars
-match ('!' : '=' : xs) l = Just (Token BANG_EQUAL "" Nothing l)
-match ('=' : '=' : xs) l = Just (Token EQUAL_EQUAL "" Nothing l)
-match ('<' : '=' : xs) l = Just (Token LESS_EQUAL "" Nothing l)
-match ('>' : '=' : xs) l = Just (Token GREATER_EQUAL "" Nothing l)
+match ('!' : '=' : xs) l = (Just (Token BANG_EQUAL "" Nothing l), xs)
+match ('=' : '=' : xs) l = (Just (Token EQUAL_EQUAL "" Nothing l), xs)
+match ('<' : '=' : xs) l = (Just (Token LESS_EQUAL "" Nothing l), xs)
+match ('>' : '=' : xs) l = (Just (Token GREATER_EQUAL "" Nothing l), xs)
 -- Single chars
-match ('!' : xs) l = Just (Token BANG "" Nothing l)
-match ('=' : xs) l = Just (Token EQUAL "" Nothing l)
-match ('<' : xs) l = Just (Token LESS "" Nothing l)
-match ('>' : xs) l = Just (Token GREATER "" Nothing l)
+match ('!' : xs) l = (Just (Token BANG "" Nothing l), xs)
+match ('=' : xs) l = (Just (Token EQUAL "" Nothing l), xs)
+match ('<' : xs) l = (Just (Token LESS "" Nothing l), xs)
+match ('>' : xs) l = (Just (Token GREATER "" Nothing l), xs)
 --
-match ('/' : xs) l = Just (Token SLASH "" Nothing l)
-match ('(' : xs) l = Just (Token LEFT_PAREN "" Nothing l)
-match (')' : xs) l = Just (Token RIGHT_PAREN "" Nothing l)
-match ('{' : xs) l = Just (Token LEFT_BRACE "" Nothing l)
-match ('}' : xs) l = Just (Token RIGHT_BRACE "" Nothing l)
-match (',' : xs) l = Just (Token COMMA "" Nothing l)
-match ('.' : xs) l = Just (Token DOT "" Nothing l)
-match ('-' : xs) l = Just (Token MINUS "" Nothing l)
-match ('+' : xs) l = Just (Token PLUS "" Nothing l)
-match (';' : xs) l = Just (Token SEMICOLON "" Nothing l)
-match ('*' : xs) l = Just (Token STAR "" Nothing l)
+match ('/' : xs) l = (Just (Token SLASH "" Nothing l), xs)
+match ('(' : xs) l = (Just (Token LEFT_PAREN "" Nothing l), xs)
+match (')' : xs) l = (Just (Token RIGHT_PAREN "" Nothing l), xs)
+match ('{' : xs) l = (Just (Token LEFT_BRACE "" Nothing l), xs)
+match ('}' : xs) l = (Just (Token RIGHT_BRACE "" Nothing l), xs)
+match (',' : xs) l = (Just (Token COMMA "" Nothing l), xs)
+match ('.' : xs) l = (Just (Token DOT "" Nothing l), xs)
+match ('-' : xs) l = (Just (Token MINUS "" Nothing l), xs)
+match ('+' : xs) l = (Just (Token PLUS "" Nothing l), xs)
+match (';' : xs) l = (Just (Token SEMICOLON "" Nothing l), xs)
+match ('*' : xs) l = (Just (Token STAR "" Nothing l), xs)
 -- Fallback
 match (_ : xs) l = error "Unknown character" -- match xs tokens l
 
