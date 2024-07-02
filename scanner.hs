@@ -139,10 +139,10 @@ match str l = case str of
   (_ : xs) -> (Nothing, xs, l)
 
 quoteLookAhead :: String -> String -> (String, String)
-quoteLookAhead [] _ = error "Quotes not terminated"
-quoteLookAhead ('\"' : '"' : xs) acc = quoteLookAhead xs ('\"' : acc)
-quoteLookAhead ('"' : xs) acc = (reverse acc, xs)
-quoteLookAhead (x : xs) acc = quoteLookAhead xs (x : acc)
+quoteLookAhead [] _ = error "Unterminated quotation"
+quoteLookAhead ('"' : xs) acc = (reverse acc, xs) -- End of quote found, return accumulated string and rest
+quoteLookAhead ('\\' : '"' : xs) acc = quoteLookAhead xs ('"' : acc) -- Handle escaped quote
+quoteLookAhead (x : xs) acc = quoteLookAhead xs (x : acc) -- Continue accumulating characters
 
 getNextNewLine :: Int -> String -> (Int, String)
 getNextNewLine l [] = (l, [])
