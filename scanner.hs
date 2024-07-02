@@ -102,24 +102,6 @@ getToken input@(x : xs) l
     (aLiteral, aRest) = alphaLookAhead xs [x] False
     keyword = parseKeyword aLiteral
 
-digitLookAhead :: String -> String -> Bool -> (String, String)
-digitLookAhead [] acc _ = (reverse acc, [])
-digitLookAhead (' ' : xs) acc p = (acc, xs)
-digitLookAhead ('.' : y : xs) acc p
-  | isDigit y && p == False = digitLookAhead xs (y : '.' : acc) True
-  | otherwise = error "Bad period"
-digitLookAhead (x : xs) acc p
-  | isDigit x = digitLookAhead xs (x : acc) p
-  | otherwise = error "Bad symbol"
-
-alphaLookAhead :: String -> String -> Bool -> (String, String)
-alphaLookAhead [] acc _ = (reverse acc, [])
-alphaLookAhead (' ' : xs) acc p = (acc, xs)
-alphaLookAhead (x : xs) acc p
-  | isValidString x = alphaLookAhead xs (x : acc) p
-  | isDigit x = alphaLookAhead xs (x : acc) p
-  | otherwise = error "Bad symbol"
-
 match :: String -> Int -> (Maybe Token, String)
 -- Special
 match ('"' : xs) l = (Just (Token STRING "" (Just literal) l), rest)
@@ -151,6 +133,30 @@ match ('*' : xs) l = (Just (Token STAR "" Nothing l), xs)
 -- Fallback. TODO: Ignore white space specifically
 match (_ : xs) l = (Nothing, xs)
 
+quoteLookAhead :: String -> String -> (String, String)
+quoteLookAhead [] _ = error "Quotes not terminated"
+quoteLookAhead ('\\' : '"' : xs) acc = quoteLookAhead xs (acc ++ "\\\"")
+quoteLookAhead ('"' : xs) acc = (acc, xs)
+quoteLookAhead (x : xs) acc = quoteLookAhead xs (acc ++ [x])
+
+digitLookAhead :: String -> String -> Bool -> (String, String)
+digitLookAhead [] acc _ = (reverse acc, [])
+digitLookAhead (' ' : xs) acc p = (acc, xs)
+digitLookAhead ('.' : y : xs) acc p
+  | isDigit y && p == False = digitLookAhead xs (y : '.' : acc) True
+  | otherwise = error "Bad period"
+digitLookAhead (x : xs) acc p
+  | isDigit x = digitLookAhead xs (x : acc) p
+  | otherwise = error "Bad symbol"
+
+alphaLookAhead :: String -> String -> Bool -> (String, String)
+alphaLookAhead [] acc _ = (reverse acc, [])
+alphaLookAhead (' ' : xs) acc p = (acc, xs)
+alphaLookAhead (x : xs) acc p
+  | isValidString x = alphaLookAhead xs (x : acc) p
+  | isDigit x = alphaLookAhead xs (x : acc) p
+  | otherwise = error "Bad symbol"
+
 main :: IO ()
 main = do
   content <- readFile "test.lox"
@@ -161,9 +167,3 @@ main = do
   print "----"
   print "Tokens"
   print tokens
-
-quoteLookAhead :: String -> String -> (String, String)
-quoteLookAhead [] _ = error "Quotes not terminated"
-quoteLookAhead ('\\' : '"' : xs) acc = quoteLookAhead xs (acc ++ "\\\"")
-quoteLookAhead ('"' : xs) acc = (acc, xs)
-quoteLookAhead (x : xs) acc = quoteLookAhead xs (acc ++ [x])
