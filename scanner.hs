@@ -46,11 +46,6 @@ data TokenType
   | EOF
   deriving (Show, Eq)
 
-addToken :: TokenType -> [Token] -> Maybe String -> Int -> [Token]
-addToken tokenType tokens literal line = (t : tokens)
-  where
-    t = Token tokenType "lexeme" literal line
-
 data Token = Token {tokenType :: TokenType, lexeme :: String, literal :: Maybe String, line :: Int}
 
 instance Show Token where
@@ -60,11 +55,17 @@ instance Show Token where
       formatLiteral :: Maybe String -> String
       formatLiteral = maybe "" (\lit -> " (" ++ lit ++ ")")
 
--- scan :: [String] -> [Token]
--- scan (x : xs) = go x
---   where
---     go :: String -> [Token]
---     go line = matchToken line
+scan :: [String] -> [Token] -> [Token]
+scan [] tokens = tokens
+scan (x : xs) tokens = (go x tokens ++ scan xs tokens)
+  where
+    go :: String -> [Token] -> [Token]
+    go [] tokens = tokens
+    go line tokens = case token of
+      Nothing -> go rest tokens
+      Just token -> go rest (token : tokens)
+      where
+        (token, rest) = getToken line 0
 
 getToken :: String -> Int -> (Maybe Token, String)
 getToken input@(x : xs) l
@@ -98,8 +99,8 @@ match ('-' : xs) l = (Just (Token MINUS "" Nothing l), xs)
 match ('+' : xs) l = (Just (Token PLUS "" Nothing l), xs)
 match (';' : xs) l = (Just (Token SEMICOLON "" Nothing l), xs)
 match ('*' : xs) l = (Just (Token STAR "" Nothing l), xs)
--- Fallback
-match (_ : xs) l = error "Unknown character" -- match xs tokens l
+-- Fallback. TODO: Ignore white space specifically
+match (_ : xs) l = (Nothing, xs)
 
 main :: IO ()
 main = do
@@ -107,13 +108,10 @@ main = do
   print "----"
   print "File Content"
   print content
-  let tokens = scan $ lines content
+  let tokens = scan (lines content) []
   print "----"
   print "Tokens"
   print tokens
-
--- TODO:
--- For tomorrow, we simply need to seperate "match" and the matching for the other functions. If not alphanumeric, we call "match".
 
 quoteLookAhead :: String -> String -> (String, String)
 quoteLookAhead [] _ = error "Quotes not terminated"
