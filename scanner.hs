@@ -60,7 +60,7 @@ scan [] tokens = tokens
 scan (x : xs) tokens = (go x tokens ++ scan xs tokens)
   where
     go :: String -> [Token] -> [Token]
-    go [] tokens = tokens
+    go [] tokens = reverse tokens
     go line tokens = case token of
       Nothing -> go rest tokens
       Just token -> go rest (token : tokens)
@@ -69,7 +69,20 @@ scan (x : xs) tokens = (go x tokens ++ scan xs tokens)
 
 getToken :: String -> Int -> (Maybe Token, String)
 getToken input@(x : xs) l
+  | isDigit x = (Just (Token NUMBER "" (Just literal) l), rest)
   | otherwise = match input l
+  where
+    (literal, rest) = digitLookAhead xs [x] False
+
+digitLookAhead :: String -> String -> Bool -> (String, String)
+digitLookAhead [] acc _ = (reverse acc, [])
+digitLookAhead (' ' : xs) acc p = (acc, xs)
+digitLookAhead ('.' : y : xs) acc p
+  | isDigit y && p == False = digitLookAhead xs (y : '.' : acc) True
+  | otherwise = error "Bad period"
+digitLookAhead (x : xs) acc p
+  | isDigit x = digitLookAhead xs (x : acc) p
+  | otherwise = error "Bad symbol"
 
 match :: String -> Int -> (Maybe Token, String)
 -- Special
