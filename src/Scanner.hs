@@ -49,24 +49,26 @@ data TokenType
   deriving (Show, Eq)
 
 parseKeyword :: String -> Maybe TokenType
-parseKeyword str = case str of
-  "and" -> Just AND
-  "class" -> Just CLASS
-  "else" -> Just ELSE
-  "false" -> Just FALSE
-  "fun" -> Just FUN
-  "for" -> Just FOR
-  "if" -> Just IF
-  "nil" -> Just NIL
-  "or" -> Just OR
-  "print" -> Just PRINT
-  "return" -> Just RETURN
-  "super" -> Just SUPER
-  "this" -> Just THIS
-  "true" -> Just TRUE
-  "var" -> Just VAR
-  "while" -> Just WHILE
-  _ -> Nothing
+parseKeyword str = lookup str keywords
+  where
+    keywords =
+      [ ("and", AND),
+        ("class", CLASS),
+        ("else", ELSE),
+        ("false", FALSE),
+        ("fun", FUN),
+        ("for", FOR),
+        ("if", IF),
+        ("nil", NIL),
+        ("or", OR),
+        ("print", PRINT),
+        ("return", RETURN),
+        ("super", SUPER),
+        ("this", THIS),
+        ("true", TRUE),
+        ("var", VAR),
+        ("while", WHILE)
+      ]
 
 data Token = Token {tokenType :: TokenType, lexeme :: String, literal :: Maybe String, line :: Int}
 
