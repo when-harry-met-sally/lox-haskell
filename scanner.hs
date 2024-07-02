@@ -109,7 +109,7 @@ match str l = case str of
   ('/' : '/' : xs) ->
     let (newLineNumber, rest) = getNextNewLine l xs
      in (Nothing, xs, newLineNumber)
-  ('\\' : 'n' : xs) -> (Nothing, xs, l + 1)
+  ('\n' : xs) -> (Nothing, xs, l + 1)
   -- Multichars
   ('!' : '=' : xs) -> (Just (Token BANG_EQUAL "!=" Nothing l), xs, l)
   ('=' : '=' : xs) -> (Just (Token EQUAL_EQUAL "==" Nothing l), xs, l)
@@ -136,7 +136,7 @@ match str l = case str of
 
 quoteLookAhead :: String -> String -> (String, String)
 quoteLookAhead [] _ = error "Quotes not terminated"
-quoteLookAhead ('\\' : '"' : xs) acc = quoteLookAhead xs (acc ++ "\\\"")
+quoteLookAhead ('\n' : '"' : xs) acc = quoteLookAhead xs (acc ++ "\\\"")
 quoteLookAhead ('"' : xs) acc = (acc, xs)
 quoteLookAhead (x : xs) acc = quoteLookAhead xs (acc ++ [x])
 
@@ -147,7 +147,8 @@ getNextNewLine l (x : xs) = getNextNewLine l xs
 
 digitLookAhead :: String -> String -> Bool -> (String, String)
 digitLookAhead [] acc _ = (reverse acc, [])
-digitLookAhead (' ' : xs) acc p = (acc, xs)
+digitLookAhead (' ' : xs) acc p = (reverse acc, xs)
+digitLookAhead ('\n' : xs) acc p = (reverse acc, xs)
 digitLookAhead ('.' : y : xs) acc p
   | isDigit y && p == False = digitLookAhead xs (y : '.' : acc) True
   | otherwise = error "Bad period"
@@ -158,6 +159,7 @@ digitLookAhead (x : xs) acc p
 alphaLookAhead :: String -> String -> Bool -> (String, String)
 alphaLookAhead [] acc _ = (reverse acc, [])
 alphaLookAhead (' ' : xs) acc p = (reverse acc, xs)
+alphaLookAhead ('\n' : xs) acc p = (reverse acc, xs)
 alphaLookAhead (x : xs) acc p
   | isValidString x = alphaLookAhead xs (x : acc) p
   | isDigit x = alphaLookAhead xs (x : acc) p
