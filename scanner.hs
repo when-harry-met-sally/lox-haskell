@@ -143,7 +143,7 @@ quoteLookAhead (x : xs) acc = quoteLookAhead xs (acc ++ [x])
 
 getNextNewLine :: Int -> String -> (Int, String)
 getNextNewLine l [] = (l, [])
-getNextNewLine l ('\\' : 'n' : xs) = (l + 1, xs)
+getNextNewLine l ('\n' : xs) = (l + 1, xs)
 getNextNewLine l (x : xs) = getNextNewLine l xs
 
 digitLookAhead :: String -> String -> Bool -> (String, String)
