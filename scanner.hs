@@ -44,15 +44,19 @@ data TokenType
   | EOF
   deriving (Show, Eq)
 
-addToken :: TokenType -> [Token] -> Int -> [Token]
-addToken tokenType tokens line = (t : tokens)
+addToken :: TokenType -> [Token] -> Maybe String -> Int -> [Token]
+addToken tokenType tokens literal line = (t : tokens)
   where
-    t = Token tokenType "a" "a" line
+    t = Token tokenType "lexeme" literal line
 
-data Token = Token {tokenType :: TokenType, lexeme :: String, literal :: String, line :: Int}
+data Token = Token {tokenType :: TokenType, lexeme :: String, literal :: Maybe String, line :: Int}
 
-instance Show Token where -- Todo, add tokenType to show
-  show (Token tokenType lexeme literal _) = show tokenType
+instance Show Token where
+  show (Token tokenType lexeme literal _) =
+    show tokenType ++ formatLiteral literal
+    where
+      formatLiteral :: Maybe String -> String
+      formatLiteral = maybe "" (\lit -> " (" ++ lit ++ ")")
 
 scan :: String -> [Token]
 scan content =
@@ -69,15 +73,39 @@ quoteLookAhead :: String -> String -> (String, String)
 quoteLookAhead [] _ = error "Quotes not terminated"
 quoteLookAhead ('\\' : '"' : xs) acc = quoteLookAhead xs (acc ++ "\\\"")
 quoteLookAhead ('"' : xs) acc = (acc, xs)
-quoteLookAhead (x : xs) acc = quoteLookAhead xs (acc ++ xs)
+quoteLookAhead (x : xs) acc = quoteLookAhead xs (acc ++ [x])
 
 get :: String -> [Token] -> Int -> [Token]
 get [] tokens l = tokens
-get ('"' : xs) tokens l = get rest (addToken STRING tokens l) l
+-- Special
+get ('"' : xs) tokens l = get rest (addToken STRING tokens (Just literal) l) l
   where
     (literal, rest) = quoteLookAhead xs []
-get ('=' : '=' : xs) tokens l = get xs (addToken EQUAL_EQUAL tokens l) l
-get ('(' : xs) tokens l = get xs (addToken LEFT_PAREN tokens l) l
+get ('/' : '/' : _) tokens l = tokens
+-- Multichars
+get ('!' : '=' : xs) tokens l = get xs (addToken BANG_EQUAL tokens Nothing l) l
+get ('=' : '=' : xs) tokens l = get xs (addToken EQUAL_EQUAL tokens Nothing l) l
+get ('<' : '=' : xs) tokens l = get xs (addToken LESS_EQUAL tokens Nothing l) l
+get ('>' : '=' : xs) tokens l = get xs (addToken GREATER_EQUAL tokens Nothing l) l
+-- Single chars
+get ('!' : xs) tokens l = get xs (addToken BANG tokens Nothing l) l
+get ('=' : xs) tokens l = get xs (addToken EQUAL tokens Nothing l) l
+get ('<' : xs) tokens l = get xs (addToken LESS tokens Nothing l) l
+get ('>' : xs) tokens l = get xs (addToken GREATER tokens Nothing l) l
+--
+get ('/' : xs) tokens l = get xs (addToken SLASH tokens Nothing l) l
+--
+get ('(' : xs) tokens l = get xs (addToken LEFT_PAREN tokens Nothing l) l
+get (')' : xs) tokens l = get xs (addToken RIGHT_PAREN tokens Nothing l) l
+get ('{' : xs) tokens l = get xs (addToken LEFT_BRACE tokens Nothing l) l
+get ('}' : xs) tokens l = get xs (addToken RIGHT_BRACE tokens Nothing l) l
+get (',' : xs) tokens l = get xs (addToken COMMA tokens Nothing l) l
+get ('.' : xs) tokens l = get xs (addToken DOT tokens Nothing l) l
+get ('-' : xs) tokens l = get xs (addToken MINUS tokens Nothing l) l
+get ('+' : xs) tokens l = get xs (addToken PLUS tokens Nothing l) l
+get (';' : xs) tokens l = get xs (addToken SEMICOLON tokens Nothing l) l
+get ('*' : xs) tokens l = get xs (addToken STAR tokens Nothing l) l
+-- Fallback
 get (_ : xs) tokens l = get xs tokens l
 
 main :: IO ()
