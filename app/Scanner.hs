@@ -71,6 +71,7 @@ parseKeyword str = lookup str keywords
       ]
 
 data Token = Token {tokenType :: TokenType, lexeme :: String, literal :: Maybe String, line :: Int}
+  deriving (Eq) -- Add Eq here
 
 instance Show Token where
   show (Token tokenType lexeme literal _) =
@@ -83,7 +84,7 @@ getEOF :: Int -> Token
 getEOF = Token EOF "" Nothing
 
 scan :: String -> [Token]
-scan text = go text text 0 []
+scan text = go text text 1 []
   where
     go :: String -> String -> Int -> [Token] -> [Token]
     go _ [] line tokens = reverse (getEOF line : tokens)
