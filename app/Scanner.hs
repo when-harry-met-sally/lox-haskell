@@ -107,7 +107,7 @@ getToken input@(x : xs) l
   | otherwise = match input l
   where
     (nLiteral, nRest) = digitLookAhead xs [x] False
-    (aLiteral, aRest) = alphaLookAhead xs [x] False
+    (aLiteral, aRest) = alphaLookAhead xs [x]
     keyword = parseKeyword aLiteral
 
 match :: String -> Int -> (Maybe Token, String, Int)
@@ -165,14 +165,14 @@ digitLookAhead (x : xs) acc p
   | isDigit x = digitLookAhead xs (x : acc) p
   | otherwise = error ("Bad symbol (" ++ [x] ++ ")")
 
-alphaLookAhead :: String -> String -> Bool -> (String, String)
-alphaLookAhead [] acc _ = (reverse acc, [])
-alphaLookAhead (' ' : xs) acc _ = (reverse acc, xs)
-alphaLookAhead ('\n' : xs) acc _ = (reverse acc, xs)
-alphaLookAhead (x : xs) acc p
-  | isValidString x = alphaLookAhead xs (x : acc) p
-  | isDigit x = alphaLookAhead xs (x : acc) p
-  | otherwise = error ("Bad symbol (" ++ [x] ++ ")")
+alphaLookAhead :: String -> String -> (String, String)
+alphaLookAhead [] acc = (reverse acc, [])
+alphaLookAhead (' ' : xs) acc = (reverse acc, xs)
+alphaLookAhead ('\n' : xs) acc = (reverse acc, xs)
+alphaLookAhead c@(x : xs) acc
+  | isValidString x = alphaLookAhead xs (x : acc)
+  | isDigit x = alphaLookAhead xs (x : acc)
+  | otherwise = (reverse acc, c)
 
 main :: IO ()
 main = do
