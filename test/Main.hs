@@ -1,4 +1,12 @@
-module Main (main) where
+module Main where
+
+import Scanner
+import Test.Hspec
 
 main :: IO ()
-main = putStrLn "Test suite not yet implemented."
+main = hspec $ do
+  describe "Scanner tests" $ do
+    it "correctly scans tokens" $ do
+      let content = "var x = 100;"
+      let expected = []
+      scan content `shouldBe` expected

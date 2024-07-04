@@ -1,4 +1,4 @@
-module Scanner (Token (..), TokenType (..)) where
+module Scanner (Token (..), TokenType (..), scan) where
 
 import Data.Char (isAlpha, isDigit)
 
@@ -156,9 +156,9 @@ getNextNewLine l (_ : xs) = getNextNewLine l xs
 digitLookAhead :: String -> String -> Bool -> (String, String)
 digitLookAhead [] acc _ = (reverse acc, [])
 digitLookAhead (' ' : xs) acc p = (reverse acc, xs)
-digitLookAhead ('\n' : xs) acc p = (reverse acc, xs)
+digitLookAhead ('\n' : xs) acc _ = (reverse acc, xs)
 digitLookAhead ('.' : y : xs) acc p
-  | isDigit y && p == False = digitLookAhead xs (y : '.' : acc) True
+  | isDigit y && not p = digitLookAhead xs (y : '.' : acc) True
   | otherwise = error "Bad period"
 digitLookAhead (x : xs) acc p
   | isDigit x = digitLookAhead xs (x : acc) p
@@ -166,8 +166,8 @@ digitLookAhead (x : xs) acc p
 
 alphaLookAhead :: String -> String -> Bool -> (String, String)
 alphaLookAhead [] acc _ = (reverse acc, [])
-alphaLookAhead (' ' : xs) acc p = (reverse acc, xs)
-alphaLookAhead ('\n' : xs) acc p = (reverse acc, xs)
+alphaLookAhead (' ' : xs) acc _ = (reverse acc, xs)
+alphaLookAhead ('\n' : xs) acc _ = (reverse acc, xs)
 alphaLookAhead (x : xs) acc p
   | isValidString x = alphaLookAhead xs (x : acc) p
   | isDigit x = alphaLookAhead xs (x : acc) p
