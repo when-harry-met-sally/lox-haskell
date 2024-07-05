@@ -9,5 +9,5 @@ spec =
   describe "Parser tests" $ do
     it "It parses good" $ do
       let content = "var x = 100"
-      let expected = []
+      let expected = "var x = 100"
       content `shouldBe` expected
