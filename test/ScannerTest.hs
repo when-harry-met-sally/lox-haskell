@@ -1,10 +1,11 @@
-module Main (main) where
+module ScannerTest (spec) where
 
 import Scanner
+import Shared
 import Test.Hspec
 
-main :: IO ()
-main = hspec $ do
+spec :: Spec
+spec =
   describe "Scanner tests" $ do
     it "correctly scans a variable declaration" $ do
       let content = "var x = 100"

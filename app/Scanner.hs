@@ -1,52 +1,7 @@
-module Scanner (Token (..), TokenType (..), scan) where
+module Scanner (TokenType (..), scan) where
 
 import Data.Char (isAlpha, isDigit)
-
-data TokenType
-  = -- Single char tokens
-    LEFT_PAREN
-  | RIGHT_PAREN
-  | LEFT_BRACE
-  | RIGHT_BRACE
-  | COMMA
-  | DOT
-  | MINUS
-  | PLUS
-  | SEMICOLON
-  | SLASH
-  | STAR
-  | -- Non single
-    BANG
-  | BANG_EQUAL
-  | EQUAL
-  | EQUAL_EQUAL
-  | GREATER
-  | GREATER_EQUAL
-  | LESS
-  | LESS_EQUAL
-  | -- Literals
-    IDENTIFIER
-  | STRING
-  | NUMBER
-  | -- Keywords
-    AND
-  | CLASS
-  | ELSE
-  | FALSE
-  | FUN
-  | FOR
-  | IF
-  | NIL
-  | OR
-  | PRINT
-  | RETURN
-  | SUPER
-  | THIS
-  | TRUE
-  | VAR
-  | WHILE
-  | EOF
-  deriving (Show, Eq)
+import Shared
 
 parseKeyword :: String -> Maybe TokenType
 parseKeyword str = lookup str keywords
@@ -69,16 +24,6 @@ parseKeyword str = lookup str keywords
         ("var", VAR),
         ("while", WHILE)
       ]
-
-data Token = Token {tokenType :: TokenType, lexeme :: String, literal :: Maybe String, line :: Int}
-  deriving (Eq) -- Add Eq here
-
-instance Show Token where
-  show (Token tokenType lexeme literal _) =
-    show tokenType ++ "[" ++ lexeme ++ "]" ++ formatLiteral literal
-    where
-      formatLiteral :: Maybe String -> String
-      formatLiteral = maybe "" (\lit -> " (" ++ lit ++ ")")
 
 getEOF :: Int -> Token
 getEOF = Token EOF "" Nothing
