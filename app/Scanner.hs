@@ -120,14 +120,3 @@ alphaLookAhead c@(x : xs) acc
   | isValidString x = alphaLookAhead xs (x : acc)
   | isDigit x = alphaLookAhead xs (x : acc)
   | otherwise = (reverse acc, c)
-
-main :: IO ()
-main = do
-  content <- readFile "../test/lox/scanner.lox"
-  print "----"
-  print "File Content"
-  print content
-  let tokens = scan content
-  print "----"
-  print "Tokens"
-  print tokens
