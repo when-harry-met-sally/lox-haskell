@@ -70,6 +70,7 @@ match str l = case str of
   ('=' : '=' : xs) -> (Just (Token EQUAL_EQUAL "==" Nothing l), xs, l)
   ('<' : '=' : xs) -> (Just (Token LESS_EQUAL "<=" Nothing l), xs, l)
   ('>' : '=' : xs) -> (Just (Token GREATER_EQUAL ">=" Nothing l), xs, l)
+  ('*' : '*' : xs) -> (Just (Token STAR_STAR "**" Nothing l), xs, l)
   -- Single chars
   (c@'!' : xs) -> (Just (Token BANG [c] Nothing l), xs, l)
   (c@'=' : xs) -> (Just (Token EQUAL [c] Nothing l), xs, l)
@@ -101,6 +102,7 @@ getNextNewLine l (_ : xs) = getNextNewLine l xs
 
 digitLookAhead :: String -> String -> Bool -> (String, String)
 digitLookAhead [] acc _ = (reverse acc, [])
+digitLookAhead c@(')' : xs) acc p = (reverse acc, c)
 digitLookAhead (' ' : xs) acc p = (reverse acc, xs)
 digitLookAhead ('\n' : xs) acc _ = (reverse acc, xs)
 digitLookAhead ('.' : y : xs) acc p

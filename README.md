@@ -1,5 +1,5 @@
-# Revision history for lox-haskell
+# lox-haskell
 
-## 0.1.0.0 -- YYYY-mm-dd
+This is an interpreter for the "lox" language outlined in "Crafting Interpreter".
 
-* First version. Released on an unsuspecting world.
+This is my first project in Haskell and my first time attempt at an interpreter.

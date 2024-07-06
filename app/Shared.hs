@@ -13,6 +13,7 @@ data TokenType
   | SEMICOLON
   | SLASH
   | STAR
+  | STAR_STAR
   | -- Non single
     BANG
   | BANG_EQUAL
@@ -49,12 +50,14 @@ data TokenType
 data Expression
   = -- Factor
     Grouping Expression
+  | Negate Expression
   | Number Int
   | -- Term
     Add Expression Expression
   | Subtract Expression Expression
   | --
     Multiply Expression Expression
+  | Exponent Expression Expression
   | Divide Expression Expression
   deriving (Show, Eq)
 
