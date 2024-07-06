@@ -1,4 +1,4 @@
-module Shared (Token (..), TokenType (..)) where
+module Shared (Token (..), TokenType (..), Expression (..)) where
 
 data TokenType
   = -- Single char tokens
@@ -44,6 +44,18 @@ data TokenType
   | VAR
   | WHILE
   | EOF
+  deriving (Show, Eq)
+
+data Expression
+  = -- Factor
+    Grouping Expression
+  | Number Int
+  | -- Term
+    Add Expression Expression
+  | Subtract Expression Expression
+  | --
+    Multiply Expression Expression
+  | Divide Expression Expression
   deriving (Show, Eq)
 
 data Token = Token {tokenType :: TokenType, lexeme :: String, literal :: Maybe String, line :: Int}
