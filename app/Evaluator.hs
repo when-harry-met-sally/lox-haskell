@@ -10,6 +10,7 @@ evaluate expression = case expression of
   (Multiply x y) -> evaluate x * evaluate y
   (Divide x y) -> evaluate x `div` evaluate y
   (Add x y) -> evaluate x + evaluate y
+  -- (Not e) -> Not $ evaluate e
   (Exponent x y) -> evaluate x ^ evaluate y
   (Subtract x y) -> evaluate x - evaluate y
 
