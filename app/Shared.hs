@@ -52,12 +52,13 @@ data Expression
     Grouping Expression
   | Negate Expression
   | Number Int
+  | Not Expression
+  | Exponent Expression Expression
   | -- Term
     Add Expression Expression
   | Subtract Expression Expression
   | --
     Multiply Expression Expression
-  | Exponent Expression Expression
   | Divide Expression Expression
   deriving (Show, Eq)
 

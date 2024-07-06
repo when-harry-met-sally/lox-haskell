@@ -5,7 +5,7 @@ import Shared
 evaluate :: Expression -> Int
 evaluate expression = case expression of
   (Grouping e) -> evaluate e
-  (Negate e) -> (-1) * evaluate e
+  (Negate e) -> -(evaluate e)
   (Number e) -> e
   (Multiply x y) -> evaluate x * evaluate y
   (Divide x y) -> evaluate x `div` evaluate y
