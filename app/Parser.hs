@@ -20,7 +20,7 @@ parseFactor (Token tokenType _ literal l : rest) = case tokenType of
     Nothing -> error "Invalid number format"
   TRUE -> (Boolean True, rest)
   FALSE -> (Boolean False, rest)
-  _ -> error "Invalid token"
+  t -> error ("Invalid factor token: " ++ show t)
 
 parseTerm :: [Token] -> (Expression, [Token])
 parseTerm tokens =
@@ -90,7 +90,11 @@ parseStatement tokens =
 parseDeclaration :: [Token] -> (Declaration, [Token])
 parseDeclaration tokens =
   case tokens of
-    (Token VAR _ _ _ : rest) -> (VarDeclaration (Variable "placeholder") (Number 0), rest)
+    c@(Token VAR _ _ _ : rest) -> case c of
+      (Token VAR _ _ _ : Token IDENTIFIER name _ _ : Token EQUAL _ _ _ : Token STRING _ val _ : Token SEMICOLON _ _ _ : rest') ->
+        case val of
+          (Just literal) -> (VarDeclaration (Identifier name) (Str literal), rest')
+          _ -> error "Invalid var declaration syntax"
     _ ->
       let (stmt, rest) = parseStatement tokens
        in (StatementDeclaration stmt, rest)

@@ -12,6 +12,7 @@ evaluateExpression expression = case expression of
     _ -> error "Can only negate a number"
   (Number e) -> IntVal e
   (Boolean e) -> BoolVal e
+  (Str e) -> StringVal e
   (Multiply x y) -> case (evaluateExpression x, evaluateExpression y) of
     (IntVal rx, IntVal ry) -> IntVal (rx * ry)
     _ -> error "Bad"

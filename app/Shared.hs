@@ -55,7 +55,8 @@ data Expression
     Grouping Expression
   | Negate Expression
   | Number Int
-  | Variable String
+  | Identifier String
+  | Str String
   | Not Expression
   | Exponent Expression Expression
   | Boolean Bool
