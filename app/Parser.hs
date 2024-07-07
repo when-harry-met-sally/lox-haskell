@@ -3,7 +3,7 @@ module Parser (parse) where
 import Shared
 
 parseFactor :: [Token] -> (Expression, [Token])
-parseFactor (Token tokenType lexem literal l : rest) = case tokenType of
+parseFactor (Token tokenType lexeme literal l : rest) = case tokenType of
   MINUS ->
     let (expr, rest') = parseFactor rest
      in (Negate expr, rest')
@@ -20,9 +20,7 @@ parseFactor (Token tokenType lexem literal l : rest) = case tokenType of
     Nothing -> error "Invalid number format"
   TRUE -> (Boolean True, rest)
   FALSE -> (Boolean False, rest)
-  IDENTIFIER -> case lexeme of
-    Just lex -> (Identifier lex, rest)
-    _ -> error "Invalid identifier"
+  IDENTIFIER -> (Identifier lexeme, rest)
   t -> error ("Invalid factor token: " ++ show t)
 
 parseTerm :: [Token] -> (Expression, [Token])
