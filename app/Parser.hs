@@ -18,6 +18,9 @@ parseFactor (Token tokenType lexeme literal l : rest) = case tokenType of
   NUMBER -> case literal of
     Just x -> (Number (read x), rest)
     Nothing -> error "Invalid number format"
+  STRING -> case literal of
+    Just x -> (Str (read x), rest)
+    Nothing -> error "Invalid number format"
   TRUE -> (Boolean True, rest)
   FALSE -> (Boolean False, rest)
   IDENTIFIER -> (Identifier lexeme, rest)
@@ -92,9 +95,9 @@ parseDeclaration :: [Token] -> (Declaration, [Token])
 parseDeclaration tokens =
   case tokens of
     (Token VAR _ _ _ : rest) -> case rest of
-      (Token IDENTIFIER name _ _ : Token EQUAL _ _ _ : rest') -> (VarDeclaration name stmt, rest')
+      (Token IDENTIFIER name _ _ : Token EQUAL _ _ _ : rest') -> (VarDeclaration name stmt, rest'')
         where
-          (stmt, rest') = parseStatement rest
+          (stmt, rest'') = parseStatement rest'
     _ ->
       let (stmt, rest) = parseStatement tokens
        in (StatementDeclaration stmt, rest)
