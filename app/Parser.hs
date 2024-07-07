@@ -94,7 +94,7 @@ parseDeclaration :: [Token] -> (Declaration, [Token])
 parseDeclaration tokens =
   case tokens of
     c@(Token VAR _ _ _ : rest) -> case c of
-      (Token VAR _ _ _ : Token IDENTIFIER name _ _ : Token EQUAL _ _ _ : Token STRING _ val _ : Token SEMICOLON_ _ _ : rest') ->
+      (Token VAR _ _ _ : Token IDENTIFIER name _ _ : Token EQUAL _ _ _ : Token STRING _ val _ : Token SEMICOLON _ _ _ : rest') ->
         case val of
           (Just literal) -> (VarDeclaration (Identifier name) (Str literal), rest')
           _ -> error "Invalid var declaration syntax"
