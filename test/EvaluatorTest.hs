@@ -5,7 +5,13 @@ import Shared
 import Test.Hspec
 
 spec :: Spec
-spec = describe "Eval tests" $ do
-  it "Subtraction" $ do
-    let eval = Subtract (Number 3) (Number 2)
-    evaluate eval `shouldBe` 1
+spec = describe "Evaluator tests" $ do
+  it "evaluates subtraction" $ do
+    let expr = Subtract (Number 3) (Number 2)
+    evaluate expr `shouldBe` IntVal 1
+  it "evaluates less than" $ do
+    let expr = Less (Number 3) (Number 2)
+    evaluate expr `shouldBe` BoolVal False
+  it "evaluates less than" $ do
+    let expr = GreaterEqual (Number 3) (Number 3)
+    evaluate expr `shouldBe` BoolVal True

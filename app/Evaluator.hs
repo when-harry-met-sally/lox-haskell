@@ -10,6 +10,7 @@ evaluate expression = case expression of
     IntVal a -> IntVal (-a)
     _ -> error "Can only negate a number"
   (Number e) -> IntVal e
+  (Boolean e) -> BoolVal e
   (Multiply x y) -> case (evaluate x, evaluate y) of
     (IntVal rx, IntVal ry) -> IntVal (rx * ry)
     _ -> error "Bad"
@@ -26,7 +27,7 @@ evaluate expression = case expression of
   (Subtract x y) -> case (evaluate x, evaluate y) of
     (IntVal rx, IntVal ry) -> IntVal (rx - ry)
     _ -> error "Bad"
-  -- Bool
+  -- Comparison
   (Not x) -> case evaluate x of
     BoolVal y -> BoolVal (not y)
   (Greater x y) -> case (evaluate x, evaluate y) of
@@ -40,14 +41,13 @@ evaluate expression = case expression of
   (LessEqual x y) -> case (evaluate x, evaluate y) of
     (IntVal rx, IntVal ry) -> BoolVal (rx <= ry)
     _ -> error "Bad"
+  (Equal x y) -> case (evaluate x, evaluate y) of
+    (IntVal rx, IntVal ry) -> BoolVal (rx == ry)
+    (BoolVal rx, BoolVal ry) -> BoolVal (rx == ry)
+    _ -> error "Bad"
+  (NotEqual x y) -> case (evaluate x, evaluate y) of
+    (IntVal rx, IntVal ry) -> BoolVal (rx /= ry)
+    (BoolVal rx, BoolVal ry) -> BoolVal (rx /= ry)
+    _ -> error "Bad"
 
--- (Not e) -> Not $ evaluate e
-
--- data NegateType = Num Int | Boolean Bool
---
--- myFunction :: NegateType -> NegateType
--- myFunction (Num x) = Num (x * (-1))
--- myFunction (Boolean s) = Boolean (not s)
-
-data Value = IntVal Int | BoolVal Bool | StringVal String
-  deriving (Show, Eq, Ord)
+-- _ -> error "Could not evaluate. Unkown error occurred"

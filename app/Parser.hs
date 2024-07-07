@@ -15,6 +15,8 @@ parseFactor (Token tokenType _ literal l : rest) = case tokenType of
   NUMBER -> case literal of
     Just x -> (Number (read x), rest)
     Nothing -> error "Invalid number format"
+  TRUE -> (Boolean True, rest)
+  FALSE -> (Boolean False, rest)
   _ -> error "Invalid token"
 
 parseTerm :: [Token] -> (Expression, [Token])
@@ -48,6 +50,12 @@ parseComparison :: [Token] -> (Expression, [Token])
 parseComparison tokens =
   let (term, rest) = parseExpression tokens
    in case rest of
+        (Token EQUAL_EQUAL _ _ _ : rest') ->
+          let (expr, rest'') = parseExpression rest'
+           in (Equal term expr, rest'')
+        (Token BANG_EQUAL _ _ _ : rest') ->
+          let (expr, rest'') = parseExpression rest'
+           in (NotEqual term expr, rest'')
         (Token LESS _ _ _ : rest') ->
           let (expr, rest'') = parseExpression rest'
            in (Less term expr, rest'')

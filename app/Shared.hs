@@ -1,4 +1,7 @@
-module Shared (Token (..), TokenType (..), Expression (..)) where
+module Shared (Token (..), TokenType (..), Expression (..), Value (..)) where
+
+data Value = IntVal Int | BoolVal Bool | StringVal String
+  deriving (Show, Eq, Ord)
 
 data TokenType
   = -- Single char tokens
@@ -54,17 +57,20 @@ data Expression
   | Number Int
   | Not Expression
   | Exponent Expression Expression
+  | Boolean Bool
   | -- Term
     Add Expression Expression
   | Subtract Expression Expression
   | --
     Multiply Expression Expression
   | Divide Expression Expression
-  | --
+  | -- Comparison
     Greater Expression Expression
   | GreaterEqual Expression Expression
   | Less Expression Expression
   | LessEqual Expression Expression
+  | Equal Expression Expression
+  | NotEqual Expression Expression
   deriving (Show, Eq)
 
 data Token = Token {tokenType :: TokenType, lexeme :: String, literal :: Maybe String, line :: Int}

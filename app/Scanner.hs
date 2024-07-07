@@ -47,7 +47,10 @@ getToken [] l = (Nothing, [], l)
 getToken input@(x : xs) l
   | isDigit x = (Just (Token NUMBER nLiteral (Just nLiteral) l), nRest, l)
   | isValidString x = case keyword of
-      Just x -> (Just (Token x aLiteral Nothing l), aRest, l)
+      Just x -> case aLiteral of
+        "true" -> (Just (Token TRUE aLiteral Nothing l), aRest, l)
+        "false" -> (Just (Token FALSE aLiteral Nothing l), aRest, l)
+        _ -> (Just (Token x aLiteral Nothing l), aRest, l)
       Nothing -> (Just (Token IDENTIFIER aLiteral Nothing l), aRest, l)
   | otherwise = match input l
   where
