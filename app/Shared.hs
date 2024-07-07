@@ -60,6 +60,11 @@ data Expression
   | --
     Multiply Expression Expression
   | Divide Expression Expression
+  | --
+    Greater Expression Expression
+  | GreaterEqual Expression Expression
+  | Less Expression Expression
+  | LessEqual Expression Expression
   deriving (Show, Eq)
 
 data Token = Token {tokenType :: TokenType, lexeme :: String, literal :: Maybe String, line :: Int}

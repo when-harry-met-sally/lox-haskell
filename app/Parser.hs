@@ -44,5 +44,23 @@ parseExpression tokens =
            in (Subtract term expr, rest'')
         _ -> (term, rest)
 
+parseComparison :: [Token] -> (Expression, [Token])
+parseComparison tokens =
+  let (term, rest) = parseExpression tokens
+   in case rest of
+        (Token LESS _ _ _ : rest') ->
+          let (expr, rest'') = parseExpression rest'
+           in (Less term expr, rest'')
+        (Token LESS_EQUAL _ _ _ : rest') ->
+          let (expr, rest'') = parseExpression rest'
+           in (LessEqual term expr, rest'')
+        (Token GREATER _ _ _ : rest') ->
+          let (expr, rest'') = parseExpression rest'
+           in (Greater term expr, rest'')
+        (Token GREATER_EQUAL _ _ _ : rest') ->
+          let (expr, rest'') = parseExpression rest'
+           in (GreaterEqual term expr, rest'')
+        _ -> (term, rest)
+
 parse :: [Token] -> Expression
-parse tokens = fst $ parseExpression tokens
+parse tokens = fst $ parseComparison tokens
