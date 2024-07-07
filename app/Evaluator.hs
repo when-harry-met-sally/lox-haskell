@@ -50,13 +50,17 @@ evaluateExpression expression = case expression of
     (IntVal rx, IntVal ry) -> BoolVal (rx /= ry)
     (BoolVal rx, BoolVal ry) -> BoolVal (rx /= ry)
 
-evaluateStatement :: Statement -> IO ()
-evaluateStatement expr =
+evaluateDeclaration :: Declaration -> IO ()
+evaluateDeclaration expr =
   case expr of
-    (ExpressionStatement expr) -> do
-      let _ = evaluateExpression expr
-      return ()
-    (PrintStatement expr) -> print ("LOG", evaluateExpression expr)
+    (StatementDeclaration stmt) -> case stmt of
+      (ExpressionStatement expr) -> do
+        let _ = evaluateExpression expr
+        return ()
+      (PrintStatement expr) -> print ("LOG", evaluateExpression expr)
+    (VarDeclaration name val) -> print "a"
 
-evaluate :: [Statement] -> IO ()
-evaluate = mapM_ evaluateStatement
+-- _ -> error "Unknown error"
+
+evaluate :: [Declaration] -> IO ()
+evaluate = mapM_ evaluateDeclaration

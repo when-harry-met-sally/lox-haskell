@@ -1,4 +1,4 @@
-module Shared (Token (..), TokenType (..), Expression (..), Value (..), Statement (..), Program (..)) where
+module Shared (Token (..), TokenType (..), Expression (..), Value (..), Statement (..), Program (..), Declaration (..)) where
 
 data Value = IntVal Int | BoolVal Bool | StringVal String | IO ()
   deriving (Show, Eq, Ord)
@@ -55,6 +55,7 @@ data Expression
     Grouping Expression
   | Negate Expression
   | Number Int
+  | Variable String
   | Not Expression
   | Exponent Expression Expression
   | Boolean Bool
@@ -74,7 +75,12 @@ data Expression
   | Statement Expression
   deriving (Show, Eq)
 
-newtype Program = Program [Statement]
+newtype Program = Program [Declaration]
+  deriving (Show, Eq)
+
+data Declaration
+  = VarDeclaration Expression Expression
+  | StatementDeclaration Statement
   deriving (Show, Eq)
 
 data Statement

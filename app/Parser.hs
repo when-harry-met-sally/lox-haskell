@@ -87,13 +87,21 @@ parseStatement tokens =
             (Token SEMICOLON _ _ _ : rest') -> (ExpressionStatement comp, rest')
             _ -> error "Expected semicolon after statement"
 
+parseDeclaration :: [Token] -> (Declaration, [Token])
+parseDeclaration tokens =
+  case tokens of
+    (Token VAR _ _ _ : rest) -> (VarDeclaration (Variable "placeholder") (Number 0), rest)
+    _ ->
+      let (stmt, rest) = parseStatement tokens
+       in (StatementDeclaration stmt, rest)
+
 parseProgram :: [Token] -> (Program, [Token])
 parseProgram tokens =
-  let parseAll stmts tokens =
-        let (stmt, rest) = parseStatement tokens
+  let parseAll decs tokens =
+        let (dec, rest) = parseDeclaration tokens
          in case rest of
-              (Token EOF _ _ _ : rest') -> (Program (stmts ++ [stmt]), rest')
-              _ -> parseAll (stmts ++ [stmt]) rest
+              (Token EOF _ _ _ : rest') -> (Program (decs ++ [dec]), rest')
+              _ -> parseAll (decs ++ [dec]) rest
    in parseAll [] tokens
 
 parse :: [Token] -> Program

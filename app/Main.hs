@@ -19,5 +19,5 @@ main = do
   print parsed
 
   case parsed of
-    Program stmts -> evaluate stmts
+    Program exprs -> evaluate exprs
     _ -> error "Expected a program"
