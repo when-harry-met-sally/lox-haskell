@@ -91,8 +91,8 @@ parseStatement tokens =
 parseDeclaration :: [Token] -> (Declaration, [Token])
 parseDeclaration tokens =
   case tokens of
-    c@(Token VAR _ _ _ : rest) -> case c of
-      (Token VAR _ _ _ : Token IDENTIFIER name _ _ : Token EQUAL _ _ _ : rest') -> (VarDeclaration name stmt, rest')
+    (Token VAR _ _ _ : rest) -> case rest of
+      (Token IDENTIFIER name _ _ : Token EQUAL _ _ _ : rest') -> (VarDeclaration name stmt, rest')
         where
           (stmt, rest') = parseStatement rest
     _ ->
