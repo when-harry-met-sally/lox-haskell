@@ -7,6 +7,9 @@ parseFactor (Token tokenType _ literal l : rest) = case tokenType of
   MINUS ->
     let (expr, rest') = parseFactor rest
      in (Negate expr, rest')
+  BANG ->
+    let (expr, rest') = parseFactor rest
+     in (Not expr, rest')
   LEFT_PAREN ->
     let (expr, rest') = parseExpression rest
      in case rest' of

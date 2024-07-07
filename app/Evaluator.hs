@@ -8,6 +8,7 @@ evaluate expression = case expression of
   -- Number
   (Negate e) -> case evaluate e of
     IntVal a -> IntVal (-a)
+    BoolVal a -> BoolVal (not a)
     _ -> error "Can only negate a number"
   (Number e) -> IntVal e
   (Boolean e) -> BoolVal e
