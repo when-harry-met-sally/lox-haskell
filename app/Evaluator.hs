@@ -2,53 +2,61 @@ module Evaluator (evaluate) where
 
 import Shared
 
-evaluate :: Expression -> Value
-evaluate expression = case expression of
-  (Grouping e) -> evaluate e
+evaluateExpression :: Expression -> Value
+evaluateExpression expression = case expression of
+  (Grouping e) -> evaluateExpression e
   -- Number
-  (Negate e) -> case evaluate e of
+  (Negate e) -> case evaluateExpression e of
     IntVal a -> IntVal (-a)
     BoolVal a -> BoolVal (not a)
     _ -> error "Can only negate a number"
   (Number e) -> IntVal e
   (Boolean e) -> BoolVal e
-  (Multiply x y) -> case (evaluate x, evaluate y) of
+  (Multiply x y) -> case (evaluateExpression x, evaluateExpression y) of
     (IntVal rx, IntVal ry) -> IntVal (rx * ry)
     _ -> error "Bad"
-  (Divide x y) -> case (evaluate x, evaluate y) of
+  (Divide x y) -> case (evaluateExpression x, evaluateExpression y) of
     (IntVal rx, IntVal 0) -> error "Can't divide by 0"
     (IntVal rx, IntVal ry) -> IntVal (rx `div` ry)
     _ -> error "Bad"
-  (Add x y) -> case (evaluate x, evaluate y) of
+  (Add x y) -> case (evaluateExpression x, evaluateExpression y) of
     (IntVal rx, IntVal ry) -> IntVal (rx + ry)
     _ -> error "Bad"
-  (Exponent x y) -> case (evaluate x, evaluate y) of
+  (Exponent x y) -> case (evaluateExpression x, evaluateExpression y) of
     (IntVal rx, IntVal ry) -> IntVal (rx ^ ry)
     _ -> error "Bad"
-  (Subtract x y) -> case (evaluate x, evaluate y) of
+  (Subtract x y) -> case (evaluateExpression x, evaluateExpression y) of
     (IntVal rx, IntVal ry) -> IntVal (rx - ry)
     _ -> error "Bad"
   -- Comparison
-  (Not x) -> case evaluate x of
+  (Not x) -> case evaluateExpression x of
     BoolVal y -> BoolVal (not y)
-  (Greater x y) -> case (evaluate x, evaluate y) of
+  (Greater x y) -> case (evaluateExpression x, evaluateExpression y) of
     (IntVal rx, IntVal ry) -> BoolVal (rx > ry)
     _ -> error "Bad"
-  (GreaterEqual x y) -> case (evaluate x, evaluate y) of
+  (GreaterEqual x y) -> case (evaluateExpression x, evaluateExpression y) of
     (IntVal rx, IntVal ry) -> BoolVal (rx >= ry)
-  (Less x y) -> case (evaluate x, evaluate y) of
+  (Less x y) -> case (evaluateExpression x, evaluateExpression y) of
     (IntVal rx, IntVal ry) -> BoolVal (rx < ry)
     _ -> error "Bad"
-  (LessEqual x y) -> case (evaluate x, evaluate y) of
+  (LessEqual x y) -> case (evaluateExpression x, evaluateExpression y) of
     (IntVal rx, IntVal ry) -> BoolVal (rx <= ry)
     _ -> error "Bad"
-  (Equal x y) -> case (evaluate x, evaluate y) of
+  (Equal x y) -> case (evaluateExpression x, evaluateExpression y) of
     (IntVal rx, IntVal ry) -> BoolVal (rx == ry)
     (BoolVal rx, BoolVal ry) -> BoolVal (rx == ry)
     _ -> error "Bad"
-  (NotEqual x y) -> case (evaluate x, evaluate y) of
+  (NotEqual x y) -> case (evaluateExpression x, evaluateExpression y) of
     (IntVal rx, IntVal ry) -> BoolVal (rx /= ry)
     (BoolVal rx, BoolVal ry) -> BoolVal (rx /= ry)
-  (Statement x) -> evaluate x
 
--- _ -> error "Could not evaluate. Unkown error occurred"
+evaluateStatement :: Statement -> IO ()
+evaluateStatement expr =
+  case expr of
+    (ExpressionStatement expr) -> do
+      let _ = evaluateExpression expr
+      return ()
+    (PrintStatement expr) -> print ("LOG", evaluateExpression expr)
+
+evaluate :: [Statement] -> IO ()
+evaluate = mapM_ evaluateStatement

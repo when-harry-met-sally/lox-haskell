@@ -1,6 +1,6 @@
-module Shared (Token (..), TokenType (..), Expression (..), Value (..)) where
+module Shared (Token (..), TokenType (..), Expression (..), Value (..), Statement (..), Program (..)) where
 
-data Value = IntVal Int | BoolVal Bool | StringVal String
+data Value = IntVal Int | BoolVal Bool | StringVal String | IO ()
   deriving (Show, Eq, Ord)
 
 data TokenType
@@ -72,7 +72,14 @@ data Expression
   | Equal Expression Expression
   | NotEqual Expression Expression
   | Statement Expression
-  | Program [Expression]
+  deriving (Show, Eq)
+
+newtype Program = Program [Statement]
+  deriving (Show, Eq)
+
+data Statement
+  = ExpressionStatement Expression
+  | PrintStatement Expression
   deriving (Show, Eq)
 
 data Token = Token {tokenType :: TokenType, lexeme :: String, literal :: Maybe String, line :: Int}

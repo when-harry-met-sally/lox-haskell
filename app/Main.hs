@@ -1,6 +1,7 @@
 import Evaluator
 import Parser
 import Scanner
+import Shared
 
 main :: IO ()
 main = do
@@ -16,7 +17,7 @@ main = do
   print "----"
   print "Parsed"
   print parsed
-  let evaluated = evaluate parsed
-  print "----"
-  print "Evaluated"
-  print evaluated
+
+  case parsed of
+    Program stmts -> evaluate stmts
+    _ -> error "Expected a program"
