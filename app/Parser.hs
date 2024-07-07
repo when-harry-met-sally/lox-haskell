@@ -86,16 +86,15 @@ parseStatement tokens =
       let (comp, rest) = parseComparison tokens
        in case rest of
             (Token SEMICOLON _ _ _ : rest') -> (ExpressionStatement comp, rest')
-            _ -> error "Expected semicolon after statement"
+            _ -> error ("Expected semicolon after statement" ++ show comp)
 
 parseDeclaration :: [Token] -> (Declaration, [Token])
 parseDeclaration tokens =
   case tokens of
     c@(Token VAR _ _ _ : rest) -> case c of
-      (Token VAR _ _ _ : Token IDENTIFIER name _ _ : Token EQUAL _ _ _ : Token STRING _ val _ : Token SEMICOLON _ _ _ : rest') ->
-        case val of
-          (Just literal) -> (VarDeclaration (Identifier name) (Str literal), rest')
-          _ -> error "Invalid var declaration syntax"
+      (Token VAR _ _ _ : Token IDENTIFIER name _ _ : Token EQUAL _ _ _ : rest') -> (VarDeclaration name stmt, rest')
+        where
+          (stmt, rest') = parseStatement rest
     _ ->
       let (stmt, rest) = parseStatement tokens
        in (StatementDeclaration stmt, rest)

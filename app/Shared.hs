@@ -56,8 +56,8 @@ data Expression
   | Negate Expression
   | Number Int
   | Str String
-  | Identifier String
   | Not Expression
+  | Identifier String
   | Exponent Expression Expression
   | Boolean Bool
   | -- Term
@@ -80,7 +80,7 @@ newtype Program = Program [Declaration]
   deriving (Show, Eq)
 
 data Declaration
-  = VarDeclaration Expression Expression
+  = VarDeclaration String Statement
   | StatementDeclaration Statement
   deriving (Show, Eq)
 
