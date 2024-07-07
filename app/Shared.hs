@@ -71,6 +71,8 @@ data Expression
   | LessEqual Expression Expression
   | Equal Expression Expression
   | NotEqual Expression Expression
+  | Statement Expression
+  | Program [Expression]
   deriving (Show, Eq)
 
 data Token = Token {tokenType :: TokenType, lexeme :: String, literal :: Maybe String, line :: Int}

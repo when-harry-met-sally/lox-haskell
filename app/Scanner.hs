@@ -111,9 +111,10 @@ digitLookAhead ('\n' : xs) acc _ = (reverse acc, xs)
 digitLookAhead ('.' : y : xs) acc p
   | isDigit y && not p = digitLookAhead xs (y : '.' : acc) True
   | otherwise = error "Bad period"
-digitLookAhead (x : xs) acc p
+digitLookAhead c@(x : xs) acc p
   | isDigit x = digitLookAhead xs (x : acc) p
-  | otherwise = error ("Bad symbol (" ++ [x] ++ ")")
+  | isAlpha x = error ("Bad symbol (" ++ [x] ++ ")")
+  | otherwise = (reverse acc, c)
 
 alphaLookAhead :: String -> String -> (String, String)
 alphaLookAhead [] acc = (reverse acc, [])

@@ -49,6 +49,6 @@ evaluate expression = case expression of
   (NotEqual x y) -> case (evaluate x, evaluate y) of
     (IntVal rx, IntVal ry) -> BoolVal (rx /= ry)
     (BoolVal rx, BoolVal ry) -> BoolVal (rx /= ry)
-    _ -> error "Bad"
+  (Statement x) -> evaluate x
 
 -- _ -> error "Could not evaluate. Unkown error occurred"

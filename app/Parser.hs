@@ -54,24 +54,41 @@ parseComparison tokens =
   let (term, rest) = parseExpression tokens
    in case rest of
         (Token EQUAL_EQUAL _ _ _ : rest') ->
-          let (expr, rest'') = parseExpression rest'
+          let (expr, rest'') = parseComparison rest'
            in (Equal term expr, rest'')
         (Token BANG_EQUAL _ _ _ : rest') ->
-          let (expr, rest'') = parseExpression rest'
+          let (expr, rest'') = parseComparison rest'
            in (NotEqual term expr, rest'')
         (Token LESS _ _ _ : rest') ->
-          let (expr, rest'') = parseExpression rest'
+          let (expr, rest'') = parseComparison rest'
            in (Less term expr, rest'')
         (Token LESS_EQUAL _ _ _ : rest') ->
-          let (expr, rest'') = parseExpression rest'
+          let (expr, rest'') = parseComparison rest'
            in (LessEqual term expr, rest'')
         (Token GREATER _ _ _ : rest') ->
-          let (expr, rest'') = parseExpression rest'
+          let (expr, rest'') = parseComparison rest'
            in (Greater term expr, rest'')
         (Token GREATER_EQUAL _ _ _ : rest') ->
-          let (expr, rest'') = parseExpression rest'
+          let (expr, rest'') = parseComparison rest'
            in (GreaterEqual term expr, rest'')
         _ -> (term, rest)
 
+parseStatement :: [Token] -> (Expression, [Token])
+parseStatement tokens =
+  let (comp, rest) = parseComparison tokens
+   in case rest of
+        (Token SEMICOLON _ _ _ : rest') ->
+          (Statement comp, rest')
+        _ -> error "Unknown error occurred while parsing statements"
+
+parseProgram :: [Token] -> (Expression, [Token])
+parseProgram tokens =
+  let parseAll stmts tokens =
+        let (stmt, rest) = parseStatement tokens
+         in case rest of
+              (Token EOF _ _ _ : rest') -> (Program (stmts ++ [stmt]), rest')
+              _ -> parseAll (stmts ++ [stmt]) rest
+   in parseAll [] tokens
+
 parse :: [Token] -> Expression
-parse tokens = fst $ parseComparison tokens
+parse tokens = fst $ parseProgram tokens
