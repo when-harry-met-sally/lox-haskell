@@ -19,7 +19,7 @@ parseFactor (Token tokenType lexeme literal l : rest) = case tokenType of
     Just x -> (Number (read x), rest)
     Nothing -> error "Invalid number format"
   STRING -> case literal of
-    Just x -> (Str (read x), rest)
+    Just x -> (Str x, rest)
     Nothing -> error "Invalid number format"
   TRUE -> (Boolean True, rest)
   FALSE -> (Boolean False, rest)
