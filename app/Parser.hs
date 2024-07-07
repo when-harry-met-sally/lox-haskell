@@ -3,7 +3,7 @@ module Parser (parse) where
 import Shared
 
 parseFactor :: [Token] -> (Expression, [Token])
-parseFactor (Token tokenType _ literal l : rest) = case tokenType of
+parseFactor (Token tokenType lexem literal l : rest) = case tokenType of
   MINUS ->
     let (expr, rest') = parseFactor rest
      in (Negate expr, rest')
@@ -20,6 +20,9 @@ parseFactor (Token tokenType _ literal l : rest) = case tokenType of
     Nothing -> error "Invalid number format"
   TRUE -> (Boolean True, rest)
   FALSE -> (Boolean False, rest)
+  IDENTIFIER -> case lexeme of
+    Just lex -> (Identifier lex, rest)
+    _ -> error "Invalid identifier"
   t -> error ("Invalid factor token: " ++ show t)
 
 parseTerm :: [Token] -> (Expression, [Token])
@@ -91,7 +94,7 @@ parseDeclaration :: [Token] -> (Declaration, [Token])
 parseDeclaration tokens =
   case tokens of
     c@(Token VAR _ _ _ : rest) -> case c of
-      (Token VAR _ _ _ : Token IDENTIFIER name _ _ : Token EQUAL _ _ _ : Token STRING _ val _ : Token SEMICOLON _ _ _ : rest') ->
+      (Token VAR _ _ _ : Token IDENTIFIER name _ _ : Token EQUAL _ _ _ : Token STRING _ val _ : Token SEMICOLON_ _ _ : rest') ->
         case val of
           (Just literal) -> (VarDeclaration (Identifier name) (Str literal), rest')
           _ -> error "Invalid var declaration syntax"
