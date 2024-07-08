@@ -4,7 +4,16 @@ import Control.Monad (foldM_)
 import qualified Data.Map.Strict as Map
 import Shared
 
-type Env = Map.Map String Value
+type Env = [Map.Map String Value]
+
+envLookup :: Env -> String -> Value
+envLookup [] key = error ("Can't find: " ++ key)
+envLookup (scope : stack) key = case Map.lookup key scope of
+  Just v -> v
+  _ -> envLookup stack key
+
+envPut :: Env -> String -> Value -> Env
+envPut (scope : stack) key value = Map.insert key value scope : stack
 
 evaluateExpression :: Expression -> Env -> Value
 evaluateExpression expression env = case expression of
@@ -17,9 +26,7 @@ evaluateExpression expression env = case expression of
   (Number e) -> IntVal e
   (Boolean e) -> BoolVal e
   (Str e) -> StringVal e
-  (Identifier name) -> case Map.lookup name env of
-    Just v -> v
-    _ -> error "Can't find"
+  (Identifier key) -> envLookup env key
   (Multiply x y) -> case (evaluateExpression x env, evaluateExpression y env) of
     (IntVal rx, IntVal ry) -> IntVal (rx * ry)
     _ -> error "Bad"
@@ -67,7 +74,7 @@ evaluateDeclaration expr env =
         let _ = evaluateExpression expr
         (return (), env)
       (PrintStatement expr) -> (print ("LOG", evaluateExpression expr env), env)
-    (VarDeclaration name expr) -> (return (), Map.insert name (evaluateExpression expr env) env)
+    (VarDeclaration name expr) -> (return (), envPut env name (evaluateExpression expr env))
 
 eval :: [Declaration] -> Env -> IO ()
 eval declarations env = foldM_ processDeclaration env declarations
@@ -79,4 +86,4 @@ eval declarations env = foldM_ processDeclaration env declarations
       return newEnv -- Pass the updated environment to the next iteration
 
 evaluate :: [Declaration] -> IO ()
-evaluate declarations = eval declarations Map.empty
+evaluate declarations = eval declarations [Map.empty]

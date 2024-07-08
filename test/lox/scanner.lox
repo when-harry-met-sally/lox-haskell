@@ -4,8 +4,3 @@ print 3 + 3;
 5 + 5;
 var bob = 4 * 7;
 print bob;
-
-{
-    var lisa = 3;
-    print lisa;
-}
