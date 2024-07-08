@@ -91,9 +91,12 @@ parseDeclaration :: [Token] -> (Declaration, [Token])
 parseDeclaration tokens =
   case tokens of
     (Token VAR _ _ _ : rest) -> case rest of
-      (Token IDENTIFIER name _ _ : Token EQUAL _ _ _ : rest') -> (VarDeclaration name stmt, consumeSemicolon rest'')
-        where
-          (stmt, rest'') = parseExpression rest'
+      (Token IDENTIFIER name _ _ : Token EQUAL _ _ _ : rest') ->
+        let (stmt, rest'') = parseExpression rest'
+         in (VarDeclaration name stmt, consumeSemicolon rest'')
+    (Token LEFT_BRACE _ _ _ : rest) ->
+      let (decs, rest') = parseBlock rest
+       in (StatementDeclaration (Block decs), rest')
     _ ->
       let (stmt, rest) = parseStatement tokens
        in (StatementDeclaration stmt, rest)
@@ -101,6 +104,16 @@ parseDeclaration tokens =
 consumeSemicolon :: [Token] -> [Token]
 consumeSemicolon (Token SEMICOLON _ _ _ : rest) = rest
 consumeSemicolon _ = error "Expected semi colon"
+
+parseBlock :: [Token] -> ([Declaration], [Token])
+parseBlock tokens =
+  let parseAll decls tokens =
+        case tokens of
+          (Token RIGHT_BRACE _ _ _ : rest) -> (reverse decls, rest)
+          _ ->
+            let (decl, rest') = parseDeclaration tokens
+             in parseAll (decl : decls) rest'
+   in parseAll [] tokens
 
 parseProgram :: [Token] -> Program
 parseProgram tokens =

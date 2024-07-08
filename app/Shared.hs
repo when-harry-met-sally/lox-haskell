@@ -87,6 +87,7 @@ data Declaration
 data Statement
   = ExpressionStatement Expression
   | PrintStatement Expression
+  | Block [Declaration]
   deriving (Show, Eq)
 
 data Token = Token {tokenType :: TokenType, lexeme :: String, literal :: Maybe String, line :: Int}
