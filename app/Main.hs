@@ -21,4 +21,3 @@ main = do
   print "Evaluation"
   case parsed of
     Program stmts -> evaluate stmts
-    _ -> error "Expected a program"

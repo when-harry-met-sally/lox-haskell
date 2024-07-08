@@ -84,7 +84,7 @@ parseStatement tokens =
       let (expr, rest') = parseComparison rest
        in (PrintStatement expr, consumeSemicolon rest')
     _ ->
-      let (expr, rest) = parseComparison rest
+      let (expr, rest) = parseComparison tokens
        in (ExpressionStatement expr, consumeSemicolon rest)
 
 parseDeclaration :: [Token] -> (Declaration, [Token])
@@ -102,14 +102,14 @@ consumeSemicolon :: [Token] -> [Token]
 consumeSemicolon (Token SEMICOLON _ _ _ : rest) = rest
 consumeSemicolon _ = error "Expected semi colon"
 
-parseProgram :: [Token] -> (Program, [Token])
+parseProgram :: [Token] -> Program
 parseProgram tokens =
   let parseAll decs tokens =
         let (dec, rest) = parseDeclaration tokens
          in case rest of
-              (Token EOF _ _ _ : _) -> (Program (decs ++ [dec]), [])
+              (Token EOF _ _ _ : _) -> Program (decs ++ [dec])
               _ -> parseAll (decs ++ [dec]) rest
    in parseAll [] tokens
 
 parse :: [Token] -> Program
-parse tokens = fst $ parseProgram tokens
+parse = parseProgram
