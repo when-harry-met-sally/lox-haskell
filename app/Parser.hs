@@ -82,22 +82,22 @@ parseStatement tokens =
   case tokens of
     (Token PRINT _ _ _ : rest) ->
       let (expr, rest') = parseComparison rest
-       in case rest' of
-            (Token SEMICOLON _ _ _ : rest'') -> (PrintStatement expr, rest'')
-            _ -> error "Expected semicolon after print statement"
+       in (PrintStatement expr, consumeSemicolon rest')
     _ ->
-      let (comp, rest) = parseComparison tokens
-       in case rest of
-            (Token SEMICOLON _ _ _ : rest') -> (ExpressionStatement comp, rest')
-            _ -> error ("Expected semicolon after statement" ++ show comp)
+      let (expr, rest) = parseComparison rest
+       in (ExpressionStatement expr, consumeSemicolon rest)
+
+consumeSemicolon :: [Token] -> [Token]
+consumeSemicolon (Token SEMICOLON _ _ _ : rest) = rest
+consumeSemicolon _ = error "Expected semi colon"
 
 parseDeclaration :: [Token] -> (Declaration, [Token])
 parseDeclaration tokens =
   case tokens of
     (Token VAR _ _ _ : rest) -> case rest of
-      (Token IDENTIFIER name _ _ : Token EQUAL _ _ _ : rest') -> (VarDeclaration name stmt, rest'')
+      (Token IDENTIFIER name _ _ : Token EQUAL _ _ _ : rest') -> (VarDeclaration name stmt, consumeSemicolon rest'')
         where
-          (stmt, rest'') = parseStatement rest'
+          (stmt, rest'') = parseExpression rest'
     _ ->
       let (stmt, rest) = parseStatement tokens
        in (StatementDeclaration stmt, rest)

@@ -1,9 +1,10 @@
 module Evaluator (evaluate) where
 
+import Control.Monad (foldM_)
 import qualified Data.Map.Strict as Map
 import Shared
 
-type Env = [Map.Map String Value]
+type Env = Map.Map String Value
 
 evaluateExpression :: Expression -> Value
 evaluateExpression expression = case expression of
@@ -54,18 +55,24 @@ evaluateExpression expression = case expression of
     (IntVal rx, IntVal ry) -> BoolVal (rx /= ry)
     (BoolVal rx, BoolVal ry) -> BoolVal (rx /= ry)
 
-evaluateDeclaration :: Declaration -> Env -> IO ()
+evaluateDeclaration :: Declaration -> Env -> (IO (), Env)
 evaluateDeclaration expr env =
   case expr of
     (StatementDeclaration stmt) -> case stmt of
       (ExpressionStatement expr) -> do
         let _ = evaluateExpression expr
-        return ()
-      (PrintStatement expr) -> print ("LOG", evaluateExpression expr)
-    (VarDeclaration name val) -> print "a"
+        (return (), env)
+      (PrintStatement expr) -> (print ("LOG", evaluateExpression expr), env)
+    (VarDeclaration name expr) -> (return (), Map.insert name (evaluateExpression expr) env)
 
 eval :: [Declaration] -> Env -> IO ()
-eval declarations env = mapM_ (\decl -> evaluateDeclaration decl env) declarations
+eval declarations env = foldM_ processDeclaration env declarations
+  where
+    processDeclaration :: Env -> Declaration -> IO Env
+    processDeclaration currentEnv decl = do
+      let (ioAction, newEnv) = evaluateDeclaration decl currentEnv
+      ioAction -- Execute the IO action
+      return newEnv -- Pass the updated environment to the next iteration
 
 evaluate :: [Declaration] -> IO ()
-evaluate declarations = eval declarations []
+evaluate declarations = eval declarations Map.empty
