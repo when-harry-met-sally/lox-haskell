@@ -11,13 +11,14 @@ main = do
   print content
   let tokens = scan content
   print "----"
-  print "Tokens"
+  print "Tokenizing"
   print tokens
   let parsed = parse tokens
   print "----"
-  print "Parsed"
+  print "Parsing"
   print parsed
-
+  print "----"
+  print "Evaluation"
   case parsed of
-    Program exprs -> evaluate exprs
+    Program stmts -> evaluate stmts
     _ -> error "Expected a program"
