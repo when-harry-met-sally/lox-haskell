@@ -1,6 +1,9 @@
 module Evaluator (evaluate) where
 
+import qualified Data.Map.Strict as Map
 import Shared
+
+type Env = [Map.Map String Value]
 
 evaluateExpression :: Expression -> Value
 evaluateExpression expression = case expression of
@@ -51,8 +54,8 @@ evaluateExpression expression = case expression of
     (IntVal rx, IntVal ry) -> BoolVal (rx /= ry)
     (BoolVal rx, BoolVal ry) -> BoolVal (rx /= ry)
 
-evaluateDeclaration :: Declaration -> IO ()
-evaluateDeclaration expr =
+evaluateDeclaration :: Declaration -> Env -> IO ()
+evaluateDeclaration expr env =
   case expr of
     (StatementDeclaration stmt) -> case stmt of
       (ExpressionStatement expr) -> do
@@ -61,7 +64,8 @@ evaluateDeclaration expr =
       (PrintStatement expr) -> print ("LOG", evaluateExpression expr)
     (VarDeclaration name val) -> print "a"
 
--- _ -> error "Unknown error"
+eval :: [Declaration] -> Env -> IO ()
+eval declarations env = mapM_ (\decl -> evaluateDeclaration decl env) declarations
 
 evaluate :: [Declaration] -> IO ()
-evaluate = mapM_ evaluateDeclaration
+evaluate declarations = eval declarations []
