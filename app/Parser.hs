@@ -11,7 +11,7 @@ parseFactor (Token tokenType lexeme literal l : rest) = case tokenType of
     let (expr, rest') = parseFactor rest
      in (Not expr, rest')
   LEFT_PAREN ->
-    let (expr, rest') = parseExpression rest
+    let (expr, rest') = parseComparison rest
      in case rest' of
           (Token RIGHT_PAREN _ _ l : rest'') -> (Grouping expr, rest'')
           _ -> error "No closing parenthesis" -- Add line number
@@ -83,6 +83,17 @@ parseStatement tokens =
     (Token PRINT _ _ _ : rest) ->
       let (expr, rest') = parseComparison rest
        in (PrintStatement expr, consumeSemicolon rest')
+    (Token IF _ _ _ : r) ->
+      case r of
+        c@(Token LEFT_PAREN _ _ _ : rest) ->
+          let (comp, rest') = parseComparison c
+              (block, rest'') = parseBlock rest'
+           in case rest'' of
+                (Token ELSE _ _ _ : rest''') ->
+                  let (block2, rest'''') = parseBlock rest'''
+                   in (IfElseStatement comp block block2, rest'''')
+                _ -> (IfStatement comp block, rest'')
+        _ -> error "bad"
     _ ->
       let (expr, rest) = parseComparison tokens
        in (ExpressionStatement expr, consumeSemicolon rest)

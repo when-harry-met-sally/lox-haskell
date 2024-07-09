@@ -81,7 +81,7 @@ evaluateDeclaration (StatementDeclaration stmt) env = case stmt of
     let _ = evaluateExpression expr env
     return env
   (PrintStatement expr) -> do
-    print ("LOG", evaluateExpression expr env)
+    print ("LOX LOG", evaluateExpression expr env)
     return env
   (Block declarations) -> do evaluateBlock declarations (Map.empty : env)
 evaluateDeclaration (VarDeclaration name expr) env = do
