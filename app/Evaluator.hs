@@ -12,8 +12,17 @@ envLookup (scope : stack) key = case Map.lookup key scope of
   Just v -> v
   _ -> envLookup stack key
 
+isInScope :: Env -> String -> Bool
+isInScope [] _ = False
+isInScope (scope : stack) key = case Map.lookup key scope of
+  Just v -> True
+  _ -> isInScope stack key
+
 envPut :: Env -> String -> Value -> Env
-envPut (scope : stack) key value = Map.insert key value scope : stack
+envPut [] _ _ = error "Environment is empty, cannot insert value"
+envPut a@(scope : stack) key value = case isInScope a key of
+  True -> error ("Variable " ++ key ++ " is already in scope")
+  False -> Map.insert key value scope : stack
 
 evaluateExpression :: Expression -> Env -> Value
 evaluateExpression expression env = case expression of
@@ -64,26 +73,34 @@ evaluateExpression expression env = case expression of
   (NotEqual x y) -> case (evaluateExpression x env, evaluateExpression y env) of
     (IntVal rx, IntVal ry) -> BoolVal (rx /= ry)
     (BoolVal rx, BoolVal ry) -> BoolVal (rx /= ry)
-  _ -> error "bad"
+  _ -> error "Bad"
 
-evaluateDeclaration :: Declaration -> Env -> (IO (), Env)
-evaluateDeclaration expr env =
-  case expr of
-    (StatementDeclaration stmt) -> case stmt of
-      (ExpressionStatement expr) -> do
-        let _ = evaluateExpression expr
-        (return (), env)
-      (PrintStatement expr) -> (print ("LOG", evaluateExpression expr env), env)
-    (VarDeclaration name expr) -> (return (), envPut env name (evaluateExpression expr env))
+evaluateDeclaration :: Declaration -> Env -> IO Env
+evaluateDeclaration (StatementDeclaration stmt) env = case stmt of
+  (ExpressionStatement expr) -> do
+    let _ = evaluateExpression expr env
+    return env
+  (PrintStatement expr) -> do
+    print ("LOG", evaluateExpression expr env)
+    return env
+  (Block declarations) -> do evaluateBlock declarations (Map.empty : env)
+evaluateDeclaration (VarDeclaration name expr) env = do
+  let env' = envPut env name (evaluateExpression expr env)
+  return env'
+
+evaluateBlock :: [Declaration] -> Env -> IO Env
+evaluateBlock [] (x : xs) = return xs
+evaluateBlock (d : ds) env = do
+  env' <- evaluateDeclaration d env
+  evaluateBlock ds env'
 
 eval :: [Declaration] -> Env -> IO ()
 eval declarations env = foldM_ processDeclaration env declarations
   where
     processDeclaration :: Env -> Declaration -> IO Env
     processDeclaration currentEnv decl = do
-      let (ioAction, newEnv) = evaluateDeclaration decl currentEnv
+      let ioAction = evaluateDeclaration decl currentEnv
       ioAction -- Execute the IO action
-      return newEnv -- Pass the updated environment to the next iteration
 
 evaluate :: [Declaration] -> IO ()
 evaluate declarations = eval declarations [Map.empty]
