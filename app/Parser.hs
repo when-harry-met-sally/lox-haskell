@@ -1,5 +1,6 @@
 module Parser (parse) where
 
+import Debug.Trace (trace)
 import Shared
 
 parseFactor :: [Token] -> (Expression, [Token])
@@ -55,7 +56,7 @@ parseExpression tokens =
 
 parseComparison :: [Token] -> (Expression, [Token])
 parseComparison tokens =
-  let (term, rest) = parseExpression tokens
+  let (term, rest) = trace ("Parse Comparison..." ++ show tokens) parseExpression tokens
    in case rest of
         (Token EQUAL_EQUAL _ _ _ : rest') ->
           let (expr, rest'') = parseComparison rest'
@@ -87,7 +88,7 @@ parseStatement tokens =
       case r of
         c@(Token LEFT_PAREN _ _ _ : rest) ->
           let (comp, rest') = parseComparison c
-              (block, rest'') = parseBlock rest'
+              (block, rest'') = trace ("Parse Statment..." ++ show rest') parseBlock rest'
            in case rest'' of
                 (Token ELSE _ _ _ : rest''') ->
                   let (block2, rest'''') = parseBlock rest'''
@@ -97,6 +98,17 @@ parseStatement tokens =
     _ ->
       let (expr, rest) = parseComparison tokens
        in (ExpressionStatement expr, consumeSemicolon rest)
+
+parseBlock :: [Token] -> ([Declaration], [Token])
+parseBlock [] = trace "EMPTY ARRAY" ([], [])
+parseBlock tokens =
+  let parseAll decls tokens =
+        case tokens of
+          (Token RIGHT_BRACE _ _ _ : rest) -> (reverse decls, rest)
+          _ ->
+            let (decl, rest') = parseDeclaration tokens
+             in parseAll (decl : decls) rest'
+   in trace ("PARSING BLOCK CALLED" ++ show tokens) parseAll [] tokens
 
 parseDeclaration :: [Token] -> (Declaration, [Token])
 parseDeclaration tokens =
@@ -115,16 +127,6 @@ parseDeclaration tokens =
 consumeSemicolon :: [Token] -> [Token]
 consumeSemicolon (Token SEMICOLON _ _ _ : rest) = rest
 consumeSemicolon _ = error "Expected semi colon"
-
-parseBlock :: [Token] -> ([Declaration], [Token])
-parseBlock tokens =
-  let parseAll decls tokens =
-        case tokens of
-          (Token RIGHT_BRACE _ _ _ : rest) -> (reverse decls, rest)
-          _ ->
-            let (decl, rest') = parseDeclaration tokens
-             in parseAll (decl : decls) rest'
-   in parseAll [] tokens
 
 parseProgram :: [Token] -> Program
 parseProgram tokens =

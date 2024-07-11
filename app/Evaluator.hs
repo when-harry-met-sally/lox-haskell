@@ -68,10 +68,12 @@ evaluateExpression expression env = case expression of
     _ -> error "Bad"
   (Equal x y) -> case (evaluateExpression x env, evaluateExpression y env) of
     (IntVal rx, IntVal ry) -> BoolVal (rx == ry)
+    (StringVal rx, StringVal ry) -> BoolVal (rx == ry)
     (BoolVal rx, BoolVal ry) -> BoolVal (rx == ry)
     _ -> error "Bad"
   (NotEqual x y) -> case (evaluateExpression x env, evaluateExpression y env) of
     (IntVal rx, IntVal ry) -> BoolVal (rx /= ry)
+    (StringVal rx, StringVal ry) -> BoolVal (rx /= ry)
     (BoolVal rx, BoolVal ry) -> BoolVal (rx /= ry)
   _ -> error "Bad"
 
