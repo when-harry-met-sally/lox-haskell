@@ -91,6 +91,11 @@ evaluateDeclaration (StatementDeclaration stmt) env = case stmt of
       BoolVal True -> do evaluateBlock block env
       BoolVal False -> return env
       _ -> error "An if statement must resolve to a boolean value"
+  (IfElseStatement expr block1 block2) ->
+    case evaluateExpression expr env of
+      BoolVal True -> do evaluateBlock block1 env
+      BoolVal False -> do evaluateBlock block2 env
+      _ -> error "An if statement must resolve to a boolean value"
 evaluateDeclaration (VarDeclaration name expr) env = do
   let env' = envPut env name (evaluateExpression expr env)
   return env'

@@ -88,7 +88,11 @@ parseStatement tokens =
       let (comp, rest') = parseComparison rest
           (block, rest'') = parseBlock rest'
        in case comp of
-            Grouping x -> (IfStatement x block, rest'')
+            Grouping ifExpr -> case rest'' of
+              (Token ELSE _ _ _ : rest''') ->
+                let (block2, rest'''') = parseBlock rest'''
+                 in (IfElseStatement ifExpr block block2, rest'''')
+              _ -> (IfStatement ifExpr block, rest'')
             _ -> error "An if block must be followed by ()"
     _ ->
       let (expr, rest) = parseComparison tokens
