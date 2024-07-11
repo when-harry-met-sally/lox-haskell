@@ -84,31 +84,15 @@ parseStatement tokens =
     (Token PRINT _ _ _ : rest) ->
       let (expr, rest') = parseComparison rest
        in (PrintStatement expr, consumeSemicolon rest')
-    (Token IF _ _ _ : r) ->
-      case r of
-        c@(Token LEFT_PAREN _ _ _ : rest) ->
-          let (comp, rest') = parseComparison c
-              (block, rest'') = trace ("Parse Statment..." ++ show rest') parseBlock rest'
-           in case rest'' of
-                (Token ELSE _ _ _ : rest''') ->
-                  let (block2, rest'''') = parseBlock rest'''
-                   in (IfElseStatement comp block block2, rest'''')
-                _ -> (IfStatement comp block, rest'')
-        _ -> error "bad"
+    (Token IF _ _ _ : rest) ->
+      let (comp, rest') = parseComparison rest
+          (block, rest'') = parseBlock rest'
+       in case comp of
+            Grouping x -> (IfStatement x block, rest'')
+            _ -> error "An if block must be followed by ()"
     _ ->
       let (expr, rest) = parseComparison tokens
        in (ExpressionStatement expr, consumeSemicolon rest)
-
-parseBlock :: [Token] -> ([Declaration], [Token])
-parseBlock [] = trace "EMPTY ARRAY" ([], [])
-parseBlock tokens =
-  let parseAll decls tokens =
-        case tokens of
-          (Token RIGHT_BRACE _ _ _ : rest) -> (reverse decls, rest)
-          _ ->
-            let (decl, rest') = parseDeclaration tokens
-             in parseAll (decl : decls) rest'
-   in trace ("PARSING BLOCK CALLED" ++ show tokens) parseAll [] tokens
 
 parseDeclaration :: [Token] -> (Declaration, [Token])
 parseDeclaration tokens =
@@ -117,12 +101,23 @@ parseDeclaration tokens =
       (Token IDENTIFIER name _ _ : Token EQUAL _ _ _ : rest') ->
         let (stmt, rest'') = parseExpression rest'
          in (VarDeclaration name stmt, consumeSemicolon rest'')
-    (Token LEFT_BRACE _ _ _ : rest) ->
-      let (decs, rest') = parseBlock rest
+    c@(Token LEFT_BRACE _ _ _ : rest) ->
+      let (decs, rest') = parseBlock c
        in (StatementDeclaration (Block decs), rest')
     _ ->
       let (stmt, rest) = parseStatement tokens
-       in (StatementDeclaration stmt, rest)
+       in trace ("Calling parse delcaration" ++ show tokens) (StatementDeclaration stmt, rest)
+
+parseBlock :: [Token] -> ([Declaration], [Token])
+parseBlock [] = trace "EMPTY ARRAY" ([], [])
+parseBlock (Token LEFT_BRACE _ _ _ : tokens) =
+  let parseAll decls tokens =
+        case tokens of
+          (Token RIGHT_BRACE _ _ _ : rest) -> (reverse decls, rest)
+          _ ->
+            let (decl, rest') = parseDeclaration tokens
+             in parseAll (decl : decls) rest'
+   in trace ("PARSING BLOCK CALLED" ++ show tokens) parseAll [] tokens
 
 consumeSemicolon :: [Token] -> [Token]
 consumeSemicolon (Token SEMICOLON _ _ _ : rest) = rest
