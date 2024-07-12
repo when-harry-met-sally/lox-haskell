@@ -30,7 +30,7 @@ envSet :: Env -> String -> Value -> Env
 envSet [] _ _ = error "Variable not found in any scope"
 envSet (scope : stack) key value =
   case Map.lookup key scope of
-    Just _ -> Map.insert key value scope : stack -- Update this scope and use the rest of the stack as is.
+    Just _ -> trace ("Setting" ++ show scope) Map.insert key value scope : stack -- Update this scope and use the rest of the stack as is.
     Nothing ->
       let updatedStack = envSet stack key value -- Recurse to find the scope to update.
        in scope : updatedStack -- Prepend the current, unchanged scope to the updated stack from the recursion.

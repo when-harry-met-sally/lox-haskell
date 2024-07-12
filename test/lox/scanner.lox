@@ -1,9 +1,5 @@
 var i = 0;
-while (i < 5) {
-    print ("first");
-    print ("second");
-    i = i + 1;
-    print("third");
-    print(i + 1);
-    print("last");
+if (i < 5) {
+    i = i + 4;
+    print(i);
 }
