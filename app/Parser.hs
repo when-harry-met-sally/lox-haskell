@@ -56,7 +56,7 @@ parseExpression tokens =
 
 parseComparison :: [Token] -> (Expression, [Token])
 parseComparison tokens =
-  let (term, rest) = trace ("Parse Comparison..." ++ show tokens) parseExpression tokens
+  let (term, rest) = parseExpression tokens
    in case rest of
         (Token EQUAL_EQUAL _ _ _ : rest') ->
           let (expr, rest'') = parseComparison rest'
@@ -78,12 +78,25 @@ parseComparison tokens =
            in (GreaterEqual term expr, rest'')
         _ -> (term, rest)
 
+parseAssignment :: [Token] -> (Expression, [Token])
+parseAssignment tokens = case tokens of
+  (Token IDENTIFIER name _ _ : Token EQUAL _ _ _ : rest') ->
+    let (expr, rest'') = parseComparison rest'
+     in (Assignment name expr, rest'')
+  _ -> parseComparison tokens
+
 parseStatement :: [Token] -> (Statement, [Token])
 parseStatement tokens =
   case tokens of
     (Token PRINT _ _ _ : rest) ->
       let (expr, rest') = parseComparison rest
        in (PrintStatement expr, consumeSemicolon rest')
+    (Token WHILE _ _ _ : rest) ->
+      let (comp, rest') = parseComparison rest
+          (block, rest'') = parseBlock rest'
+       in case comp of
+            Grouping ifExpr -> (WhileStatement comp block, rest'')
+            _ -> error "An if block must be followed by ()"
     (Token IF _ _ _ : rest) ->
       let (comp, rest') = parseComparison rest
           (block, rest'') = parseBlock rest'
@@ -95,25 +108,27 @@ parseStatement tokens =
               _ -> (IfStatement ifExpr block, rest'')
             _ -> error "An if block must be followed by ()"
     _ ->
-      let (expr, rest) = parseComparison tokens
+      let (expr, rest) = parseAssignment tokens
        in (ExpressionStatement expr, consumeSemicolon rest)
+
+-- in (ExpressionStatement expr, consumeSemicolon rest)
 
 parseDeclaration :: [Token] -> (Declaration, [Token])
 parseDeclaration tokens =
   case tokens of
     (Token VAR _ _ _ : rest) -> case rest of
       (Token IDENTIFIER name _ _ : Token EQUAL _ _ _ : rest') ->
-        let (stmt, rest'') = parseExpression rest'
+        let (stmt, rest'') = parseComparison rest'
          in (VarDeclaration name stmt, consumeSemicolon rest'')
     c@(Token LEFT_BRACE _ _ _ : rest) ->
       let (decs, rest') = parseBlock c
        in (StatementDeclaration (Block decs), rest')
     _ ->
       let (stmt, rest) = parseStatement tokens
-       in trace ("Calling parse delcaration" ++ show tokens) (StatementDeclaration stmt, rest)
+       in (StatementDeclaration stmt, rest)
 
 parseBlock :: [Token] -> ([Declaration], [Token])
-parseBlock [] = trace "EMPTY ARRAY" ([], [])
+parseBlock [] = ([], [])
 parseBlock (Token LEFT_BRACE _ _ _ : tokens) =
   let parseAll decls tokens =
         case tokens of
@@ -121,11 +136,11 @@ parseBlock (Token LEFT_BRACE _ _ _ : tokens) =
           _ ->
             let (decl, rest') = parseDeclaration tokens
              in parseAll (decl : decls) rest'
-   in trace ("PARSING BLOCK CALLED" ++ show tokens) parseAll [] tokens
+   in parseAll [] tokens
 
 consumeSemicolon :: [Token] -> [Token]
 consumeSemicolon (Token SEMICOLON _ _ _ : rest) = rest
-consumeSemicolon _ = error "Expected semi colon"
+consumeSemicolon (_ : rest) = error ("Expected semi colon" ++ show rest)
 
 parseProgram :: [Token] -> Program
 parseProgram tokens =

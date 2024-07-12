@@ -2,15 +2,16 @@ module Evaluator (evaluate) where
 
 import Control.Monad (foldM_)
 import qualified Data.Map.Strict as Map
+import Debug.Trace (trace)
 import Shared
 
 type Env = [Map.Map String Value]
 
 envLookup :: Env -> String -> Value
 envLookup [] key = error ("Can't find: " ++ key)
-envLookup (scope : stack) key = case Map.lookup key scope of
+envLookup s@(scope : stack) key = case Map.lookup key scope of
   Just v -> v
-  _ -> envLookup stack key
+  _ -> trace ("VAR LOOKUP" ++ show s) envLookup stack key
 
 isInScope :: Env -> String -> Bool
 isInScope [] _ = False
@@ -20,9 +21,19 @@ isInScope (scope : stack) key = case Map.lookup key scope of
 
 envPut :: Env -> String -> Value -> Env
 envPut [] _ _ = error "Environment is empty, cannot insert value"
-envPut a@(scope : stack) key value = case isInScope a key of
-  True -> error ("Variable " ++ key ++ " is already in scope")
-  False -> Map.insert key value scope : stack
+envPut (scope : stack) key value =
+  if isInScope (scope : stack) key
+    then error ("Variable " ++ key ++ " is already in scope")
+    else Map.insert key value scope : stack -- Correctly use the updated scope.
+
+envSet :: Env -> String -> Value -> Env
+envSet [] _ _ = error "Variable not found in any scope"
+envSet (scope : stack) key value =
+  case Map.lookup key scope of
+    Just _ -> Map.insert key value scope : stack -- Update this scope and use the rest of the stack as is.
+    Nothing ->
+      let updatedStack = envSet stack key value -- Recurse to find the scope to update.
+       in scope : updatedStack -- Prepend the current, unchanged scope to the updated stack from the recursion.
 
 evaluateExpression :: Expression -> Env -> Value
 evaluateExpression expression env = case expression of
@@ -79,13 +90,26 @@ evaluateExpression expression env = case expression of
 
 evaluateDeclaration :: Declaration -> Env -> IO Env
 evaluateDeclaration (StatementDeclaration stmt) env = case stmt of
-  (ExpressionStatement expr) -> do
-    let _ = evaluateExpression expr env
-    return env
+  (ExpressionStatement expr) ->
+    case expr of
+      (Assignment name expr) -> do
+        let env' = envSet env name (evaluateExpression expr env)
+        return env'
+      _ -> do
+        let _ = evaluateExpression expr env
+        return env
   (PrintStatement expr) -> do
     print ("LOX LOG", evaluateExpression expr env)
     return env
   (Block declarations) -> do evaluateBlock declarations (Map.empty : env)
+  w@(WhileStatement expr block) ->
+    case evaluateExpression expr env of
+      BoolVal True ->
+        do
+          env' <- evaluateBlock block env
+          evaluateDeclaration (StatementDeclaration w) env'
+      BoolVal False -> return env
+      _ -> error "An while statement must resolve to a boolean value"
   (IfStatement expr block) ->
     case evaluateExpression expr env of
       BoolVal True -> do evaluateBlock block env

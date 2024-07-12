@@ -1,5 +1,9 @@
-if ("bob" == "bob"){
-    print "finally";
-} else {
-    print("groovy");
+var i = 0;
+while (i < 5) {
+    print ("first");
+    print ("second");
+    i = i + 1;
+    print("third");
+    print(i + 1);
+    print("last");
 }

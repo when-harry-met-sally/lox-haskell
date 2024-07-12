@@ -73,6 +73,7 @@ data Expression
   | LessEqual Expression Expression
   | Equal Expression Expression
   | NotEqual Expression Expression
+  | Assignment String Expression
   | Statement Expression
   deriving (Show, Eq)
 
@@ -88,6 +89,7 @@ data Statement
   = ExpressionStatement Expression
   | PrintStatement Expression
   | Block [Declaration]
+  | WhileStatement Expression [Declaration]
   | IfStatement Expression [Declaration]
   | IfElseStatement Expression [Declaration] [Declaration]
   deriving (Show, Eq)
