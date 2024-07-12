@@ -22,6 +22,7 @@ parseFactor (Token tokenType lexeme literal l : rest) = case tokenType of
   STRING -> case literal of
     Just x -> (Str x, rest)
     Nothing -> error "Invalid number format"
+  NIL -> (Nil, rest)
   TRUE -> (Boolean True, rest)
   FALSE -> (Boolean False, rest)
   IDENTIFIER -> (Identifier lexeme, rest)
@@ -77,6 +78,13 @@ parseComparison tokens =
           let (expr, rest'') = parseComparison rest'
            in (GreaterEqual term expr, rest'')
         _ -> (term, rest)
+
+-- parseLogicalOperators :: [Token] -> (Expression, [Token])
+-- parseLogicalOperators tokens = case tokens of
+--   (Token IDENTIFIER name _ _ : Token EQUAL _ _ _ : rest') ->
+--     let (expr, rest'') = parseComparison rest'
+--      in (Assignment name expr, rest'')
+--   _ -> parseComparison tokens
 
 parseAssignment :: [Token] -> (Expression, [Token])
 parseAssignment tokens = case tokens of

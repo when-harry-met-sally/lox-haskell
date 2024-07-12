@@ -1,6 +1,6 @@
 module Shared (Token (..), TokenType (..), Expression (..), Value (..), Statement (..), Program (..), Declaration (..)) where
 
-data Value = IntVal Int | BoolVal Bool | StringVal String | IO ()
+data Value = IntVal Int | BoolVal Bool | StringVal String | NilValue | IO ()
   deriving (Show, Eq, Ord)
 
 data TokenType
@@ -17,7 +17,7 @@ data TokenType
   | SLASH
   | STAR
   | STAR_STAR
-  | -- Non single
+  | -- Multi
     BANG
   | BANG_EQUAL
   | EQUAL
@@ -56,6 +56,7 @@ data Expression
   | Negate Expression
   | Number Int
   | Str String
+  | Nil
   | Not Expression
   | Identifier String
   | Exponent Expression Expression
