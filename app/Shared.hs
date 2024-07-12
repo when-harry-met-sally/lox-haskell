@@ -1,6 +1,6 @@
 module Shared (Token (..), TokenType (..), Expression (..), Value (..), Statement (..), Program (..), Declaration (..)) where
 
-data Value = IntVal Int | BoolVal Bool | StringVal String | NilValue | IO ()
+data Value = IntVal Int | BoolVal Bool | StringVal String | NilValue
   deriving (Show, Eq, Ord)
 
 data TokenType
@@ -96,6 +96,7 @@ data Statement
   | PrintStatement Expression
   | Block [Declaration]
   | WhileStatement Expression [Declaration]
+  | ForStatement Expression [Declaration]
   | IfStatement Expression [Declaration]
   | IfElseStatement Expression [Declaration] [Declaration]
   deriving (Show, Eq)

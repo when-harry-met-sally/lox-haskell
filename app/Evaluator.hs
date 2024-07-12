@@ -134,14 +134,12 @@ evaluateDeclaration (StatementDeclaration stmt) env = case stmt of
       _ -> error "An while statement must resolve to a boolean value"
   (IfStatement expr block) ->
     let ex = evaluateExpression expr env
-        fx = isTruthy ex
-     in case fx of
+     in case isTruthy ex of
           True -> do evaluateBlock block env
           False -> return env
   (IfElseStatement expr block1 block2) ->
     let ex = evaluateExpression expr env
-        fx = isTruthy ex
-     in case fx of
+     in case isTruthy ex of
           True -> do evaluateBlock block1 env
           False -> do evaluateBlock block2 env
 evaluateDeclaration (VarDeclaration name expr) env = do
