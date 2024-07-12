@@ -11,7 +11,7 @@ envLookup :: Env -> String -> Value
 envLookup [] key = error ("Can't find: " ++ key)
 envLookup s@(scope : stack) key = case Map.lookup key scope of
   Just v -> v
-  _ -> trace ("VAR LOOKUP" ++ show s) envLookup stack key
+  _ -> envLookup stack key
 
 isInScope :: Env -> String -> Bool
 isInScope [] _ = False
@@ -101,7 +101,7 @@ evaluateDeclaration (StatementDeclaration stmt) env = case stmt of
   (PrintStatement expr) -> do
     print ("LOX LOG", evaluateExpression expr env)
     return env
-  (Block declarations) -> do evaluateBlock declarations (Map.empty : env)
+  (Block declarations) -> do evaluateBlock declarations env
   w@(WhileStatement expr block) ->
     case evaluateExpression expr env of
       BoolVal True ->
@@ -126,9 +126,13 @@ evaluateDeclaration (VarDeclaration name expr) env = do
 
 evaluateBlock :: [Declaration] -> Env -> IO Env
 evaluateBlock [] (x : xs) = return xs
-evaluateBlock (d : ds) env = do
-  env' <- evaluateDeclaration d env
-  evaluateBlock ds env'
+evaluateBlock decs env = evalBlock decs (Map.empty : env)
+  where
+    evalBlock :: [Declaration] -> Env -> IO Env
+    evalBlock [] (x : xs) = return xs
+    evalBlock (d : ds) env = do
+      env' <- evaluateDeclaration d env
+      evalBlock ds env'
 
 eval :: [Declaration] -> Env -> IO ()
 eval declarations env = foldM_ processDeclaration env declarations
