@@ -51,23 +51,19 @@ evaluateExpression expression env = case expression of
   (And x y) ->
     let fx = evaluateExpression x env
         fy = evaluateExpression y env
-        ex = isTruthy fx
-        ey = isTruthy fy
-     in case ex of
+     in case isTruthy fx of
           True ->
-            case ey of
+            case isTruthy fy of
               True -> fy
               False -> fy
           False -> fx
   (Or x y) ->
     let fx = evaluateExpression x env
         fy = evaluateExpression y env
-        ex = isTruthy fx
-        ey = isTruthy fy
-     in case ex of
+     in case isTruthy fx of
           True -> fx
           False ->
-            case ey of
+            case isTruthy fy of
               True -> fy
               False -> fy
   (Boolean e) -> BoolVal e
