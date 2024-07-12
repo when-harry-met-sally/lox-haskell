@@ -35,15 +35,41 @@ envSet (scope : stack) key value =
       let updatedStack = envSet stack key value -- Recurse to find the scope to update.
        in scope : updatedStack -- Prepend the current, unchanged scope to the updated stack from the recursion.
 
+isTruthy :: Value -> Bool
+isTruthy (BoolVal False) = False -- BoolVal False is falsy
+isTruthy NilValue = False -- NilValue is falsy
+isTruthy _ = True -- All other values are truthy
+
 evaluateExpression :: Expression -> Env -> Value
 evaluateExpression expression env = case expression of
   (Grouping e) -> evaluateExpression e env
-  -- Number
   (Negate e) -> case evaluateExpression e env of
     IntVal a -> IntVal (-a)
     BoolVal a -> BoolVal (not a)
     _ -> error "Can only negate a number"
   (Number e) -> IntVal e
+  (And x y) ->
+    let fx = evaluateExpression x env
+        fy = evaluateExpression y env
+        ex = isTruthy fx
+        ey = isTruthy fy
+     in case ex of
+          True ->
+            case ey of
+              True -> fy
+              False -> fy
+          False -> fx
+  (Or x y) ->
+    let fx = evaluateExpression x env
+        fy = evaluateExpression y env
+        ex = isTruthy fx
+        ey = isTruthy fy
+     in case ex of
+          True -> fx
+          False ->
+            case ey of
+              True -> fy
+              False -> fy
   (Boolean e) -> BoolVal e
   (Str e) -> StringVal e
   (Identifier key) -> envLookup env key
@@ -111,15 +137,17 @@ evaluateDeclaration (StatementDeclaration stmt) env = case stmt of
       BoolVal False -> return env
       _ -> error "An while statement must resolve to a boolean value"
   (IfStatement expr block) ->
-    case evaluateExpression expr env of
-      BoolVal True -> do evaluateBlock block env
-      BoolVal False -> return env
-      _ -> error "An if statement must resolve to a boolean value"
+    let ex = evaluateExpression expr env
+        fx = isTruthy ex
+     in case fx of
+          True -> do evaluateBlock block env
+          False -> return env
   (IfElseStatement expr block1 block2) ->
-    case evaluateExpression expr env of
-      BoolVal True -> do evaluateBlock block1 env
-      BoolVal False -> do evaluateBlock block2 env
-      _ -> error "An if statement must resolve to a boolean value"
+    let ex = evaluateExpression expr env
+        fx = isTruthy ex
+     in case fx of
+          True -> do evaluateBlock block1 env
+          False -> do evaluateBlock block2 env
 evaluateDeclaration (VarDeclaration name expr) env = do
   let env' = envPut env name (evaluateExpression expr env)
   return env'

@@ -12,7 +12,7 @@ parseFactor (Token tokenType lexeme literal l : rest) = case tokenType of
     let (expr, rest') = parseFactor rest
      in (Not expr, rest')
   LEFT_PAREN ->
-    let (expr, rest') = parseComparison rest
+    let (expr, rest') = parseLogicalOperators rest
      in case rest' of
           (Token RIGHT_PAREN _ _ l : rest'') -> (Grouping expr, rest'')
           _ -> error "No closing parenthesis" -- Add line number
@@ -79,19 +79,24 @@ parseComparison tokens =
            in (GreaterEqual term expr, rest'')
         _ -> (term, rest)
 
--- parseLogicalOperators :: [Token] -> (Expression, [Token])
--- parseLogicalOperators tokens = case tokens of
---   (Token IDENTIFIER name _ _ : Token EQUAL _ _ _ : rest') ->
---     let (expr, rest'') = parseComparison rest'
---      in (Assignment name expr, rest'')
---   _ -> parseComparison tokens
+parseLogicalOperators :: [Token] -> (Expression, [Token])
+parseLogicalOperators tokens =
+  let (expr, rest) = parseComparison tokens
+   in case rest of
+        (Token OR _ _ _ : rest') ->
+          let (expr2, rest'') = parseLogicalOperators rest'
+           in (Or expr expr2, rest'')
+        (Token AND _ _ _ : rest') ->
+          let (expr2, rest'') = parseLogicalOperators rest'
+           in (And expr expr2, rest'')
+        _ -> (expr, rest)
 
 parseAssignment :: [Token] -> (Expression, [Token])
 parseAssignment tokens = case tokens of
   (Token IDENTIFIER name _ _ : Token EQUAL _ _ _ : rest') ->
-    let (expr, rest'') = parseComparison rest'
+    let (expr, rest'') = parseLogicalOperators rest'
      in (Assignment name expr, rest'')
-  _ -> parseComparison tokens
+  _ -> parseLogicalOperators tokens
 
 parseStatement :: [Token] -> (Statement, [Token])
 parseStatement tokens =

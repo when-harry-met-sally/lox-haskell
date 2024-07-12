@@ -1,5 +1,7 @@
-var i = 1;
-if (i < 5) {
+var i = 10;
+if (i == 10 and i == 10) {
     i = 3 * i + 4 * 3;
     print(i);
-}
+} else {
+    print ("3");
+  }

@@ -61,6 +61,9 @@ data Expression
   | Identifier String
   | Exponent Expression Expression
   | Boolean Bool
+  | -- Logical operators
+    And Expression Expression
+  | Or Expression Expression
   | -- Term
     Add Expression Expression
   | Subtract Expression Expression
@@ -77,6 +80,8 @@ data Expression
   | Assignment String Expression
   | Statement Expression
   deriving (Show, Eq)
+
+-- FALSY is nil or False
 
 newtype Program = Program [Declaration]
   deriving (Show, Eq)
