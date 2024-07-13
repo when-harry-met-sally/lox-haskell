@@ -1,5 +1,6 @@
 module Parser (parse) where
 
+import Data.List.NonEmpty (cons)
 import Debug.Trace (trace)
 import Shared
 
@@ -110,6 +111,15 @@ parseStatement tokens =
        in case comp of
             Grouping ifExpr -> (WhileStatement comp block, rest'')
             _ -> error "An if block must be followed by ()"
+    (Token FOR _ _ _ : rest) ->
+      case rest of
+        (Token LEFT_PAREN _ _ _ : rest1) ->
+          let (decl, rest2) = parseDeclaration rest1
+              (comp, rest3) = parseLogicalOperators rest2
+              (iter, Token RIGHT_PAREN _ _ _ : rest4) = parseAssignment $ consumeSemicolon rest3
+              (block, rest5) = parseBlock rest4
+           in (Block (decl : [StatementDeclaration (WhileStatement comp (block ++ [StatementDeclaration (ExpressionStatement iter)]))]), rest5)
+        _ -> error "A left paren must follow a for"
     (Token IF _ _ _ : rest) ->
       let (comp, rest') = parseComparison rest
           (block, rest'') = parseBlock rest'
@@ -123,8 +133,6 @@ parseStatement tokens =
     _ ->
       let (expr, rest) = parseAssignment tokens
        in (ExpressionStatement expr, consumeSemicolon rest)
-
--- in (ExpressionStatement expr, consumeSemicolon rest)
 
 parseDeclaration :: [Token] -> (Declaration, [Token])
 parseDeclaration tokens =
