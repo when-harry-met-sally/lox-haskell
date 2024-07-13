@@ -88,6 +88,7 @@ newtype Program = Program [Declaration]
 
 data Declaration
   = VarDeclaration String Expression
+  | FunctionDeclaration String [Expression] [Declaration]
   | StatementDeclaration Statement
   deriving (Show, Eq)
 

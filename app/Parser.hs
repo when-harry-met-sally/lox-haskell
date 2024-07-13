@@ -140,6 +140,18 @@ parseDeclaration tokens =
       (Token IDENTIFIER name _ _ : Token EQUAL _ _ _ : rest') ->
         let (stmt, rest'') = parseComparison rest'
          in (VarDeclaration name stmt, consumeSemicolon rest'')
+    (Token FUN _ _ _ : rest) -> case rest of
+      (Token IDENTIFIER name _ _ : Token LEFT_PAREN _ _ _ : rest') ->
+        let parseArgs args tokens =
+              case tokens of
+                (Token RIGHT_PAREN _ _ _ : rest'') -> (reverse args, rest'')
+                _ ->
+                  let (arg, rest') = parseLogicalOperators tokens
+                   in parseArgs (arg : args) rest'
+            (args, rest'') = parseArgs [] rest'
+            (block, rest''') = parseBlock rest''
+         in (FunctionDeclaration name args block, rest''')
+      _ -> error "Missing"
     c@(Token LEFT_BRACE _ _ _ : rest) ->
       let (decs, rest') = parseBlock c
        in (StatementDeclaration (Block decs), rest')
