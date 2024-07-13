@@ -1,6 +1,5 @@
 module Parser (parse) where
 
-import Data.List.NonEmpty (cons)
 import Debug.Trace (trace)
 import Shared
 
